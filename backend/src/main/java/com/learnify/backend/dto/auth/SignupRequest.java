@@ -2,6 +2,7 @@ package com.learnify.backend.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,6 @@ public class SignupRequest {
     @Size(min = 8, max = 50, message = "Password must be between 8 and 50 characters")
     private String password;
 
-    @Size(max = 15)
+    @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits and be between 10 and 15 digits")
     private String phoneNumber;
 }
