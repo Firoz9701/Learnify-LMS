@@ -1,5 +1,7 @@
 package com.learnify.backend.controller;
 
+import com.learnify.backend.dto.auth.LoginRequest;
+import com.learnify.backend.dto.auth.LoginResponse;
 import com.learnify.backend.dto.auth.SignupRequest;
 import com.learnify.backend.dto.auth.UserResponse;
 import com.learnify.backend.service.AuthService;
@@ -27,5 +29,15 @@ public class AuthController {
         UserResponse response = authService.register(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+
+        System.out.println("Login endpoint hit");
+
+        LoginResponse response = authService.login(request);
+
+        return ResponseEntity.ok(response);
     }
 }
