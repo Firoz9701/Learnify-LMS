@@ -1,5 +1,12 @@
 package com.learnify.backend.service.impl;
 
+import com.learnify.backend.repository.UserRepository;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.learnify.backend.entity.auth.User;
+
 import com.learnify.backend.dto.course.CourseRequest;
 import com.learnify.backend.dto.course.CourseResponse;
 import com.learnify.backend.entity.course.Course;
@@ -17,8 +24,11 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
 
-    public CourseServiceImpl(CourseRepository courseRepository) {
+    private final UserRepository userRepository;
+
+    public CourseServiceImpl(CourseRepository courseRepository, UserRepository userRepository) {
         this.courseRepository = courseRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -26,11 +36,19 @@ public class CourseServiceImpl implements CourseService {
 
         Course course = new Course();
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User instructor = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found."));
+
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setThumbnail(request.getThumbnail());
         course.setPrice(request.getPrice());
         course.setPublished(request.getPublished());
+        course.setInstructor(instructor);
 
         Course savedCourse = courseRepository.save(course);
 
@@ -50,8 +68,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse getCourseById(Long id) {
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Course not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
 
         return mapToResponse(course);
     }
@@ -60,8 +77,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse updateCourse(Long id, CourseRequest request) {
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Course not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
 
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
@@ -78,8 +94,7 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourse(Long id) {
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Course not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
 
         courseRepository.delete(course);
     }
