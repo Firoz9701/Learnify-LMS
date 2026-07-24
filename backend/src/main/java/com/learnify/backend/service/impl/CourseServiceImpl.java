@@ -16,6 +16,11 @@ import com.learnify.backend.repository.CourseRepository;
 import com.learnify.backend.service.CourseService;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,12 +41,7 @@ public class CourseServiceImpl implements CourseService {
 
         Course course = new Course();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User instructor = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found."));
+        User instructor = getCurrentInstructor();
 
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
@@ -56,12 +56,18 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseResponse> getAllCourses() {
+    public Page<CourseResponse> getAllCourses(
+            int page,
+            int size,
+            String sortBy) {
 
-        return courseRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(sortBy).ascending());
+
+        return courseRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
@@ -76,8 +82,11 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseResponse updateCourse(Long id, CourseRequest request) {
 
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
+        User instructor = getCurrentInstructor();
+
+        Course course = courseRepository.findByIdAndInstructor(id, instructor)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Course not found or you are not authorized."));
 
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
@@ -93,8 +102,11 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public void deleteCourse(Long id) {
 
-        Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
+        User instructor = getCurrentInstructor();
+
+        Course course = courseRepository.findByIdAndInstructor(id, instructor)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Course not found or you are not authorized."));
 
         courseRepository.delete(course);
     }
@@ -102,17 +114,31 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<CourseResponse> getMyCourses() {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User instructor = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found."));
+        User instructor = getCurrentInstructor();
 
         return courseRepository.findByInstructor(instructor)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CourseResponse> searchCourses(String keyword) {
+
+        return courseRepository.findByTitleContainingIgnoreCase(keyword)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private User getCurrentInstructor() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found."));
     }
 
     private CourseResponse mapToResponse(Course course) {

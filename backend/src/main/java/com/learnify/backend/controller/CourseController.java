@@ -4,9 +4,12 @@ import com.learnify.backend.dto.course.CourseRequest;
 import com.learnify.backend.dto.course.CourseResponse;
 import com.learnify.backend.service.CourseService;
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -30,15 +33,27 @@ public class CourseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CourseResponse>> getAllCourses() {
+    public ResponseEntity<Page<CourseResponse>> getAllCourses(
 
-        return ResponseEntity.ok(courseService.getAllCourses());
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+
+        return ResponseEntity.ok(
+                courseService.getAllCourses(page, size, sortBy));
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<CourseResponse>> getMyCourses() {
 
         return ResponseEntity.ok(courseService.getMyCourses());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CourseResponse>> searchCourses(
+            @RequestParam String keyword) {
+
+        return ResponseEntity.ok(courseService.searchCourses(keyword));
     }
 
     @GetMapping("/{id}")
