@@ -99,6 +99,22 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.delete(course);
     }
 
+    @Override
+    public List<CourseResponse> getMyCourses() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User instructor = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found."));
+
+        return courseRepository.findByInstructor(instructor)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     private CourseResponse mapToResponse(Course course) {
 
         CourseResponse response = new CourseResponse();
