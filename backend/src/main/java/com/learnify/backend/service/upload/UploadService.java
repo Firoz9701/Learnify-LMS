@@ -1,10 +1,11 @@
 package com.learnify.backend.service.upload;
 
+import com.learnify.backend.dto.upload.UploadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UploadService {
 
-    String uploadThumbnail(MultipartFile file);
+    UploadResponse uploadThumbnail(MultipartFile file);
 
-    String uploadVideo(MultipartFile file);
+    UploadResponse uploadVideo(MultipartFile file);
 }

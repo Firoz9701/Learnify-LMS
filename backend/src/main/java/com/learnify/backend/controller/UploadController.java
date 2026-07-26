@@ -1,12 +1,11 @@
 package com.learnify.backend.controller;
 
+import com.learnify.backend.dto.upload.UploadResponse;
 import com.learnify.backend.service.upload.UploadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/upload")
@@ -19,22 +18,24 @@ public class UploadController {
     }
 
     @PostMapping("/thumbnail")
-    public ResponseEntity<Map<String, String>> uploadThumbnail(
+    public ResponseEntity<UploadResponse> uploadThumbnail(
             @RequestParam("file") MultipartFile file) {
 
-        String filePath = uploadService.uploadThumbnail(file);
+        UploadResponse response = uploadService.uploadThumbnail(file);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("filePath", filePath));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PostMapping("/video")
-    public ResponseEntity<Map<String, String>> uploadVideo(
+    public ResponseEntity<UploadResponse> uploadVideo(
             @RequestParam("file") MultipartFile file) {
 
-        String filePath = uploadService.uploadVideo(file);
+        UploadResponse response = uploadService.uploadVideo(file);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("filePath", filePath));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 }
