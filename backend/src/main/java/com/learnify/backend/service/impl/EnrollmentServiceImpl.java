@@ -14,6 +14,8 @@ import com.learnify.backend.dto.enrollment.EnrollmentResponse;
 import com.learnify.backend.service.EnrollmentService;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -34,6 +36,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+        @Transactional
     public EnrollmentResponse enrollStudent(Long studentId,
             EnrollmentRequest request) {
 
@@ -61,6 +64,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EnrollmentResponse> getStudentEnrollments(Long studentId) {
 
         return enrollmentRepository.findByStudentId(studentId)
@@ -70,6 +74,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EnrollmentResponse> getCourseEnrollments(Long courseId) {
         return enrollmentRepository.findByCourseId(courseId)
                 .stream()
@@ -82,10 +87,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         EnrollmentResponse response = new EnrollmentResponse();
 
         response.setId(enrollment.getId());
+
         response.setStudentId(enrollment.getStudent().getId());
+
         response.setCourseId(enrollment.getCourse().getId());
-        response.setEnrolledAt(enrollment.getEnrolledAt());
-        response.setProgress(enrollment.getProgress());
+
+        response.setCourseTitle(
+                enrollment.getCourse().getTitle());
+
+        response.setEnrolledAt(
+                enrollment.getEnrolledAt());
+
+        response.setProgress(
+                enrollment.getProgress());
 
         return response;
     }

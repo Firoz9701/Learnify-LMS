@@ -10,8 +10,15 @@ import java.time.LocalDateTime;
 public class EnrollmentResponse {
 
     private Long id;
+
     private Long studentId;
+
     private Long courseId;
+
+    private String courseTitle;
+
     private LocalDateTime enrolledAt;
+
     private Double progress;
+
 }

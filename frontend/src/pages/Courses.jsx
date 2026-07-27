@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllCourses } from "../services/courseService";
+import { Link } from "react-router-dom";
 
-function Home() {
+function Courses() {
 
     const [courses, setCourses] = useState([]);
 
@@ -31,15 +32,15 @@ function Home() {
 
         <div className="container mt-5">
 
-            <h2>Available Courses</h2>
+            <h2 className="mb-4">All Courses</h2>
 
             <div className="row">
 
                 {courses.map(course => (
 
                     <div
-                        key={course.id}
-                        className="col-md-4 mb-4">
+                        className="col-md-4 mb-4"
+                        key={course.id}>
 
                         <div className="card h-100">
 
@@ -50,6 +51,13 @@ function Home() {
                                 <p>{course.description}</p>
 
                                 <h6>₹ {course.price}</h6>
+
+                                <Link
+                                    to={`/courses/${course.id}`}
+                                    className="btn btn-primary"
+                                >
+                                    View Details
+                                </Link>
 
                             </div>
 
@@ -64,7 +72,6 @@ function Home() {
         </div>
 
     );
-
 }
 
-export default Home;
+export default Courses;
