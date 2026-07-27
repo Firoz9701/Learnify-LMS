@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getStudentEnrollments } from "../../services/enrollmentService";
 
+import { Link } from "react-router-dom";
+
 function MyCourses() {
 
     const [enrollments, setEnrollments] = useState([]);
@@ -54,18 +56,31 @@ function MyCourses() {
 
                                 <div className="card-body">
 
-                                    <h5 className="card-title">
+                                    <Link
+                                        to={`/student/course/${enrollment.courseId}/lessons`}
+                                        className="text-decoration-none"
+                                    >
+                                        <h5 className="card-title">
+                                            {enrollment.courseTitle}
+                                        </h5>
+                                    </Link>
 
-                                        {enrollment.courseTitle}
-
-                                    </h5>
-
-                                    <p>
-
-                                        <strong>Progress:</strong>{" "}
-                                        {enrollment.progress}%
-
+                                    <p className="mb-2">
+                                        <strong>Progress:</strong> {enrollment.progress.toFixed(0)}%
                                     </p>
+
+                                    <div className="progress">
+                                        <div
+                                            className="progress-bar bg-success"
+                                            role="progressbar"
+                                            style={{ width: `${enrollment.progress}%` }}
+                                            aria-valuenow={enrollment.progress}
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                        >
+                                            {enrollment.progress.toFixed(0)}%
+                                        </div>
+                                    </div>
 
                                     <p>
 
