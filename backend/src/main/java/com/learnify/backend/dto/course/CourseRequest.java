@@ -23,6 +23,8 @@ public class CourseRequest {
 
     private String thumbnail;
 
+    private String videoUrl;
+
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = true,
             message = "Price cannot be negative")

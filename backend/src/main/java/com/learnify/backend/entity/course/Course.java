@@ -31,6 +31,9 @@ public class Course extends BaseEntity {
 
     private String thumbnail;
 
+    @Column(length = 500)
+    private String videoUrl;
+
     @Column(nullable = false)
     private BigDecimal price = BigDecimal.ZERO;
 

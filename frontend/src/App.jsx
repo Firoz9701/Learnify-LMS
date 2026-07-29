@@ -7,13 +7,21 @@ import AppRoutes from "./routes/AppRoutes";
 function App() {
     return (
         <BrowserRouter>
-            <Navbar />
 
-            <div className="container mt-4">
-                <AppRoutes />
+            <div className="d-flex flex-column min-vh-100">
+
+                <Navbar />
+
+                <main className="container mt-4 flex-grow-1">
+
+                    <AppRoutes />
+
+                </main>
+
+                <Footer />
+
             </div>
 
-            <Footer />
         </BrowserRouter>
     );
 }

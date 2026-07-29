@@ -46,6 +46,7 @@ public class CourseServiceImpl implements CourseService {
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setThumbnail(request.getThumbnail());
+        course.setVideoUrl(request.getVideoUrl());
         course.setPrice(request.getPrice());
         course.setPublished(request.getPublished());
         course.setInstructor(instructor);
@@ -91,6 +92,7 @@ public class CourseServiceImpl implements CourseService {
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
         course.setThumbnail(request.getThumbnail());
+        course.setVideoUrl(request.getVideoUrl());
         course.setPrice(request.getPrice());
         course.setPublished(request.getPublished());
 
@@ -148,6 +150,7 @@ public class CourseServiceImpl implements CourseService {
         response.setId(course.getId());
         response.setTitle(course.getTitle());
         response.setDescription(course.getDescription());
+        response.setVideoUrl(course.getVideoUrl());
         response.setThumbnail(course.getThumbnail());
         response.setPrice(course.getPrice());
         response.setPublished(course.getPublished());

@@ -1,68 +1,19 @@
-import { useEffect, useState } from "react";
-import { getAllCourses } from "../services/courseService";
+import Hero from "../components/home/Hero";
+import FeaturedCourses from "../components/home/FeaturedCourses";
+import WhyLearnify from "../components/home/WhyLearnify";
+import Statistics from "../components/home/Statistics";
+import CTASection from "../components/home/CTASection";
 
 function Home() {
 
-    const [courses, setCourses] = useState([]);
-
-    useEffect(() => {
-
-        const fetchCourses = async () => {
-
-            try {
-
-                const data = await getAllCourses();
-
-                setCourses(data);
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
-
-        };
-
-        fetchCourses();
-
-    }, []);
-
     return (
-
-        <div className="container mt-5">
-
-            <h2>Available Courses</h2>
-
-            <div className="row">
-
-                {courses.map(course => (
-
-                    <div
-                        key={course.id}
-                        className="col-md-4 mb-4">
-
-                        <div className="card h-100">
-
-                            <div className="card-body">
-
-                                <h5>{course.title}</h5>
-
-                                <p>{course.description}</p>
-
-                                <h6>₹ {course.price}</h6>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                ))}
-
-            </div>
-
-        </div>
-
+        <>
+            <Hero />
+            <FeaturedCourses />
+            <WhyLearnify />
+            <Statistics />
+            <CTASection />
+        </>
     );
 
 }

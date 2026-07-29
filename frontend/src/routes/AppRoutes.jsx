@@ -12,6 +12,8 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import MyCourses from "../pages/student/MyCourses";
 import Lessons from "../pages/student/Lessons";
 import LessonDetails from "../pages/student/LessonDetails";
+import ManageCourses from "../pages/instructor/ManageCourses";
+import ManageLessons from "../pages/instructor/ManageLessons";
 
 
 function AppRoutes() {
@@ -20,22 +22,8 @@ function AppRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route
-                path="/courses"
-                element={
-                    <ProtectedRoute>
-                        <Courses />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/courses/:id"
-                element={
-                    <ProtectedRoute>
-                        <CourseDetails />
-                    </ProtectedRoute>
-                }
-            />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:id" element={<CourseDetails />} />
             <Route
                 path="/student/my-courses"
                 element={
@@ -73,6 +61,23 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <InstructorDashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/instructor/courses"
+                element={
+                    <ProtectedRoute>
+                        <ManageCourses />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/instructor/lessons"
+                element={
+                    <ProtectedRoute>
+                        <ManageLessons />
                     </ProtectedRoute>
                 }
             />

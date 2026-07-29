@@ -46,8 +46,24 @@ public class AuthServiceImpl implements AuthService {
             throw new ResourceAlreadyExistsException("Email is already registered.");
         }
 
-        Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
-                .orElseThrow(() -> new ResourceNotFoundException("Default student role not found."));
+        Role selectedRole;
+
+        if (request.getRole() != null && !request.getRole().isBlank()) {
+            String normalizedRole = request.getRole().trim().toUpperCase();
+            if (normalizedRole.equals("ROLE_ADMIN")) {
+                selectedRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                        .orElseThrow(() -> new ResourceNotFoundException("Admin role not found."));
+            } else if (normalizedRole.equals("ROLE_INSTRUCTOR")) {
+                selectedRole = roleRepository.findByName(RoleName.ROLE_INSTRUCTOR)
+                        .orElseThrow(() -> new ResourceNotFoundException("Instructor role not found."));
+            } else {
+                selectedRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
+                        .orElseThrow(() -> new ResourceNotFoundException("Student role not found."));
+            }
+        } else {
+            selectedRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
+                    .orElseThrow(() -> new ResourceNotFoundException("Default student role not found."));
+        }
 
         User user = new User();
 
@@ -63,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
 
         user.setEmailVerified(false);
 
-        user.setRole(studentRole);
+        user.setRole(selectedRole);
 
         User savedUser = userRepository.save(user);
 

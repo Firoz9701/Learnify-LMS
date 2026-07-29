@@ -29,4 +29,6 @@ public class SignupRequest {
 
     @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must contain only digits and be between 10 and 15 digits")
     private String phoneNumber;
+
+    private String role;
 }
