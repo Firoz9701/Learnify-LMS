@@ -8,8 +8,7 @@ function Register() {
         lastName: "",
         email: "",
         password: "",
-        confirmPassword: "",
-        role: "ROLE_STUDENT"
+        confirmPassword: ""
     });
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -54,8 +53,7 @@ function Register() {
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
                 email: formData.email.trim(),
-                password: formData.password,
-                role: formData.role
+                password: formData.password
             });
 
             setMessage("Registration successful. You can now log in.");
@@ -119,17 +117,8 @@ function Register() {
                                     </div>
                                 </div>
 
-                                <div className="mt-3">
-                                    <label className="form-label">Register as <span className="text-danger">*</span></label>
-                                    <select className="form-select" name="role" value={formData.role} onChange={handleChange}>
-                                        <option value="ROLE_STUDENT">Student</option>
-                                        <option value="ROLE_INSTRUCTOR">Instructor</option>
-                                        <option value="ROLE_ADMIN">Admin</option>
-                                    </select>
-                                </div>
-
                                 <div className="alert alert-light border mt-3 py-2 mb-0">
-                                    <small className="text-muted">Choose the role you want during registration. Admin and instructor accounts will be created with their respective backend roles.</small>
+                                    <small className="text-muted">New public registrations are created as student accounts. Only admins can create instructor or admin users.</small>
                                 </div>
 
                                 {error && <div className="alert alert-danger mt-3 py-2">{error}</div>}

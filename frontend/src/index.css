@@ -233,3 +233,38 @@ section {
   background: #eef2ff;
   font-size: 30px;
 }
+
+.quick-action-card{
+    transition:0.25s ease;
+    cursor:pointer;
+}
+
+.quick-action-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 14px 30px rgba(0,0,0,.08);
+}
+
+.admin-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 55%, #f8f7ff 100%);
+}
+
+.admin-panel {
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.admin-table thead th {
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(79, 70, 229, 0.03);
+}
+
+.admin-role-select {
+  min-width: 135px;
+}

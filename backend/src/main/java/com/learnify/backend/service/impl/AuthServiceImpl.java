@@ -2,6 +2,7 @@ package com.learnify.backend.service.impl;
 
 import com.learnify.backend.dto.auth.LoginRequest;
 import com.learnify.backend.dto.auth.LoginResponse;
+import com.learnify.backend.dto.auth.ChangePasswordRequest;
 import com.learnify.backend.dto.auth.SignupRequest;
 import com.learnify.backend.dto.auth.UserResponse;
 import com.learnify.backend.enums.RoleName;
@@ -46,24 +47,8 @@ public class AuthServiceImpl implements AuthService {
             throw new ResourceAlreadyExistsException("Email is already registered.");
         }
 
-        Role selectedRole;
-
-        if (request.getRole() != null && !request.getRole().isBlank()) {
-            String normalizedRole = request.getRole().trim().toUpperCase();
-            if (normalizedRole.equals("ROLE_ADMIN")) {
-                selectedRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
-                        .orElseThrow(() -> new ResourceNotFoundException("Admin role not found."));
-            } else if (normalizedRole.equals("ROLE_INSTRUCTOR")) {
-                selectedRole = roleRepository.findByName(RoleName.ROLE_INSTRUCTOR)
-                        .orElseThrow(() -> new ResourceNotFoundException("Instructor role not found."));
-            } else {
-                selectedRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
-                        .orElseThrow(() -> new ResourceNotFoundException("Student role not found."));
-            }
-        } else {
-            selectedRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
-                    .orElseThrow(() -> new ResourceNotFoundException("Default student role not found."));
-        }
+        Role selectedRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
+            .orElseThrow(() -> new ResourceNotFoundException("Default student role not found."));
 
         User user = new User();
 
@@ -79,6 +64,8 @@ public class AuthServiceImpl implements AuthService {
 
         user.setEmailVerified(false);
 
+        user.setForcePasswordChange(false);
+
         user.setRole(selectedRole);
 
         User savedUser = userRepository.save(user);
@@ -92,6 +79,8 @@ public class AuthServiceImpl implements AuthService {
         response.setPhoneNumber(savedUser.getPhoneNumber());
         response.setProfileImage(savedUser.getProfileImage());
         response.setRole(savedUser.getRole().getName().name());
+        response.setEnabled(savedUser.getEnabled());
+        response.setForcePasswordChange(savedUser.getForcePasswordChange());
 
         return response;
     }
@@ -101,6 +90,10 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password."));
+
+        if (Boolean.FALSE.equals(user.getEnabled())) {
+            throw new IllegalArgumentException("This account has been disabled. Please contact admin.");
+        }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResourceNotFoundException("Invalid email or password.");
@@ -117,11 +110,26 @@ public class AuthServiceImpl implements AuthService {
         userResponse.setPhoneNumber(user.getPhoneNumber());
         userResponse.setProfileImage(user.getProfileImage());
         userResponse.setRole(user.getRole().getName().name());
+        userResponse.setEnabled(user.getEnabled());
+        userResponse.setForcePasswordChange(user.getForcePasswordChange());
 
         LoginResponse response = new LoginResponse();
         response.setToken(token);
         response.setUser(userResponse);
 
         return response;
+    }
+
+    @Override
+    public String changeTemporaryPassword(String email, ChangePasswordRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setForcePasswordChange(false);
+        userRepository.save(user);
+
+        return "Password changed successfully.";
     }
 }

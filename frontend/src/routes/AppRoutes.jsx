@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 
 import Home from "../pages/Home";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ForceChangePassword from "../pages/auth/ForceChangePassword";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Courses from "../pages/Courses";
@@ -21,6 +23,15 @@ function AppRoutes() {
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route
+                path="/force-change-password"
+                element={
+                    <ProtectedRoute>
+                        <ForceChangePassword />
+                    </ProtectedRoute>
+                }
+            />
             <Route path="/register" element={<Register />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:id" element={<CourseDetails />} />

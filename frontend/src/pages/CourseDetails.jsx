@@ -2,17 +2,21 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getCourseById, getCourseImage } from "../services/courseService";
 import Quiz from "../components/course/Quiz";
-import { enrollStudent } from "../services/enrollmentService";
+import { enrollStudent, getStudentEnrollments } from "../services/enrollmentService";
 
 function CourseDetails() {
 
     const { id } = useParams();
 
     const [course, setCourse] = useState(null);
+    const [isEnrolled, setIsEnrolled] = useState(false);
+    const [checkingEnrollment, setCheckingEnrollment] = useState(true);
 
     useEffect(() => {
 
         const fetchCourse = async () => {
+
+            const user = JSON.parse(localStorage.getItem("user"));
 
             try {
 
@@ -20,9 +24,21 @@ function CourseDetails() {
 
                 setCourse(data);
 
+                if (user && user.role === "ROLE_STUDENT") {
+                    const enrollments = await getStudentEnrollments(user.id);
+                    const enrolled = enrollments.some((item) => String(item.courseId) === String(id));
+                    setIsEnrolled(enrolled);
+                } else {
+                    setIsEnrolled(false);
+                }
+
             } catch (error) {
 
                 console.log(error);
+
+            } finally {
+
+                setCheckingEnrollment(false);
 
             }
 
@@ -47,6 +63,8 @@ function CourseDetails() {
         try {
 
             await enrollStudent(user.id, course.id);
+
+            setIsEnrolled(true);
 
             alert("Enrollment Successful!");
 
@@ -108,7 +126,15 @@ function CourseDetails() {
 
                             </div>
 
-                            <Quiz courseId={course.id} courseTitle={course.title} />
+                            {checkingEnrollment ? (
+                                <div className="alert alert-light mt-4 mb-0">Checking quiz access...</div>
+                            ) : isEnrolled ? (
+                                <Quiz courseId={course.id} courseTitle={course.title} />
+                            ) : (
+                                <div className="alert alert-warning mt-4 mb-0">
+                                    Enroll in this course as a student to unlock the quiz.
+                                </div>
+                            )}
 
                         </div>
 

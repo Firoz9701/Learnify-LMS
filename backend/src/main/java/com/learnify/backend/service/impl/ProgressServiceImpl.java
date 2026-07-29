@@ -14,6 +14,7 @@ import com.learnify.backend.repository.LessonRepository;
 import com.learnify.backend.repository.UserRepository;
 import com.learnify.backend.service.ProgressService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +38,7 @@ public class ProgressServiceImpl implements ProgressService {
     }
 
     @Override
+        @Transactional
     public ProgressResponse completeLesson(Long studentId,
             ProgressRequest request) {
 

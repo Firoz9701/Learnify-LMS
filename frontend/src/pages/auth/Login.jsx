@@ -49,6 +49,11 @@ function Login() {
             const response = await login(formData);
             loginUser(response.data.user, response.data.token);
 
+            if (response?.data?.user?.forcePasswordChange) {
+                navigate("/force-change-password");
+                return;
+            }
+
             const role = response?.data?.user?.role || formData.role;
             if (role === "ROLE_ADMIN") navigate("/admin");
             else if (role === "ROLE_INSTRUCTOR") navigate("/instructor");
@@ -109,6 +114,11 @@ function Login() {
                                         >
                                             {showPassword ? "Hide" : "Show"}
                                         </button>
+                                    </div>
+                                    <div className="text-end mt-2">
+                                        <Link to="/forgot-password" className="small text-decoration-none fw-semibold">
+                                            Forgot Password?
+                                        </Link>
                                     </div>
                                 </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 function LessonDetails() {
@@ -10,13 +10,13 @@ function LessonDetails() {
 
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const [completed, setCompleted] = useState(false);
 
-        loadLesson();
+    const navigate = useNavigate();
 
-    }, []);
+    const user = JSON.parse(localStorage.getItem("user"));
 
-    const loadLesson = async () => {
+    async function loadLesson() {
 
         try {
 
@@ -39,7 +39,45 @@ function LessonDetails() {
 
         }
 
-    };
+    }
+
+    useEffect(() => {
+
+        loadLesson();
+
+    }, []);
+
+    async function markComplete() {
+
+        try {
+
+            await api.post(
+
+                `/progress/student/${user.id}`,
+
+                {
+
+                    lessonId: Number(lessonId)
+
+                }
+
+            );
+
+            setCompleted(true);
+
+            alert("Lesson completed successfully!");
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            alert(error.response?.data?.message || "Unable to complete lesson.");
+
+        }
+
+    }
 
     if (loading) {
 
@@ -120,9 +158,11 @@ function LessonDetails() {
 
                 <button
                     className="btn btn-success"
+                    onClick={markComplete}
+                    disabled={completed}
                 >
 
-                    Mark Complete
+                    {completed ? "✓ Completed" : "Mark Complete"}
 
                 </button>
 
