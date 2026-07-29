@@ -1,47 +1,104 @@
-const highlights = [
-    {
-        title: "Structured learning",
-        description: "Follow guided lessons and milestones that keep your progress clear and motivating."
-    },
-    {
-        title: "Flexible pace",
-        description: "Learn whenever it fits your schedule with content designed for real life."
-    },
-    {
-        title: "Skill-focused outcomes",
-        description: "Build practical knowledge that translates into career-ready confidence."
-    }
-];
-
 function WhyLearnify() {
+
+    const features = [
+
+        {
+            icon: "📚",
+            title: "Industry Ready Courses",
+            description:
+                "Learn Java, Spring Boot, React, Docker, AWS and more with practical projects."
+        },
+
+        {
+            icon: "👨‍🏫",
+            title: "Expert Instructors",
+            description:
+                "Courses are designed to help you become job-ready with real-world knowledge."
+        },
+
+        {
+            icon: "🏆",
+            title: "Certificates",
+            description:
+                "Receive a certificate after successfully completing each course."
+        },
+
+        {
+            icon: "⏰",
+            title: "Learn Anytime",
+            description:
+                "Study anywhere, anytime with lifetime access to your enrolled courses."
+        }
+
+    ];
+
     return (
-        <section id="why-learnify" className="py-5 section-soft">
+
+        <section className="py-5 section-soft">
+
             <div className="container">
-                <div className="row align-items-center g-5">
-                    <div className="col-lg-5">
-                        <p className="text-primary fw-semibold mb-2">Why Learnify</p>
-                        <h2 className="h3 fw-bold">A learning experience designed to help you stay consistent</h2>
-                        <p className="text-muted mt-3">
-                            From first lesson to final certification, Learnify keeps the experience simple, engaging, and focused on momentum.
-                        </p>
-                    </div>
-                    <div className="col-lg-7">
-                        <div className="row g-4">
-                            {highlights.map((item) => (
-                                <div className="col-md-6" key={item.title}>
-                                    <div className="p-4 rounded-4 bg-white shadow-sm h-100">
-                                        <div className="feature-icon">✦</div>
-                                        <h3 className="h6 fw-bold mt-3">{item.title}</h3>
-                                        <p className="text-muted mb-0">{item.description}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+
+                <div className="text-center mb-5">
+
+                    <span className="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                        Why Learnify?
+                    </span>
+
+                    <h2 className="fw-bold mt-3">
+                        Everything You Need To Learn Better
+                    </h2>
+
+                    <p className="text-muted">
+                        Learn modern technologies through structured, practical,
+                        and industry-focused courses.
+                    </p>
+
                 </div>
+
+                <div className="row g-4">
+
+                    {features.map((feature, index) => (
+
+                        <div className="col-md-6 col-lg-3" key={index}>
+
+                            <div className="card border-0 shadow-sm h-100 feature-card">
+
+                                <div className="card-body text-center p-4">
+
+                                    <div className="feature-icon mx-auto mb-3">
+
+                                        {feature.icon}
+
+                                    </div>
+
+                                    <h5 className="fw-bold">
+
+                                        {feature.title}
+
+                                    </h5>
+
+                                    <p className="text-muted mb-0">
+
+                                        {feature.description}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    ))}
+
+                </div>
+
             </div>
+
         </section>
+
     );
+
 }
 
 export default WhyLearnify;

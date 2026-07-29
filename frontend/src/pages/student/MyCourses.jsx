@@ -1,96 +1,141 @@
 import { useEffect, useState } from "react";
-import { getStudentEnrollments } from "../../services/enrollmentService";
-
+import api from "../../services/api";
 import { Link } from "react-router-dom";
 
 function MyCourses() {
 
-    const [enrollments, setEnrollments] = useState([]);
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
 
-        const loadEnrollments = async () => {
-
-            try {
-
-                const user = JSON.parse(localStorage.getItem("user"));
-
-                const data = await getStudentEnrollments(user.id);
-
-                setEnrollments(data);
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
-
-        };
-
-        loadEnrollments();
+        loadCourses();
 
     }, []);
 
+    const loadCourses = async () => {
+
+        try {
+
+            const user =
+                JSON.parse(localStorage.getItem("user"));
+
+            const response =
+                await api.get(
+                    `/enrollments/student/${user.id}`
+                );
+
+            setCourses(response.data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+    if (loading) {
+
+        return (
+            <div className="container py-5">
+                Loading...
+            </div>
+        );
+
+    }
+
     return (
 
-        <div className="container mt-5">
+        <div className="container py-5">
 
-            <h2 className="mb-4">My Courses</h2>
+            <div className="mb-5">
 
-            {enrollments.length === 0 ? (
+                <h2 className="fw-bold">
+                    My Learning
+                </h2>
 
-                <p>You haven't enrolled in any courses yet.</p>
+                <p className="text-muted">
+                    Continue where you left off.
+                </p>
+
+            </div>
+
+            {courses.length === 0 ? (
+
+                <div className="text-center py-5">
+
+                    <h4>No enrolled courses</h4>
+
+                    <Link
+                        to="/courses"
+                        className="btn btn-primary mt-3"
+                    >
+                        Browse Courses
+                    </Link>
+
+                </div>
 
             ) : (
 
-                <div className="row">
+                <div className="row g-4">
 
-                    {enrollments.map((enrollment) => (
+                    {courses.map(course => (
 
                         <div
-                            className="col-md-4 mb-4"
-                            key={enrollment.id}
+                            className="col-lg-4"
+                            key={course.id}
                         >
 
-                            <div className="card h-100 shadow-sm">
+                            <div className="card h-100 shadow-sm course-card">
+
+                                <img
+                                    src={`/images/${course.courseThumbnail}`}
+                                    className="course-banner"
+                                    alt=""
+                                />
 
                                 <div className="card-body">
 
-                                    <Link
-                                        to={`/student/course/${enrollment.courseId}/lessons`}
-                                        className="text-decoration-none"
-                                    >
-                                        <h5 className="card-title">
-                                            {enrollment.courseTitle}
-                                        </h5>
-                                    </Link>
+                                    <h5 className="fw-bold">
 
-                                    <p className="mb-2">
-                                        <strong>Progress:</strong> {enrollment.progress.toFixed(0)}%
-                                    </p>
+                                        {course.courseTitle}
 
-                                    <div className="progress">
+                                    </h5>
+
+                                    <div className="progress my-3">
+
                                         <div
-                                            className="progress-bar bg-success"
-                                            role="progressbar"
-                                            style={{ width: `${enrollment.progress}%` }}
-                                            aria-valuenow={enrollment.progress}
-                                            aria-valuemin="0"
-                                            aria-valuemax="100"
+                                            className="progress-bar"
+                                            style={{
+                                                width:
+                                                    `${course.progress}%`
+                                            }}
                                         >
-                                            {enrollment.progress.toFixed(0)}%
+                                            {Math.round(course.progress)}%
                                         </div>
+
                                     </div>
 
-                                    <p>
+                                    <p className="text-muted">
 
-                                        <strong>Enrolled On:</strong><br />
-
-                                        {new Date(
-                                            enrollment.enrolledAt
-                                        ).toLocaleDateString()}
+                                        {course.completedLessons}
+                                        {" / "}
+                                        {course.totalLessons}
+                                        {" Lessons Completed"}
 
                                     </p>
+
+                                    <Link
+                                        to={`/student/course/${course.courseId}/lessons`}
+                                        className="btn btn-primary w-100"
+                                    >
+                                        Continue Learning
+                                    </Link>
 
                                 </div>
 

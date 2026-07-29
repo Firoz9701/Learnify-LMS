@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getLessonById } from "../../services/lessonService";
-import { completeLesson } from "../../services/lessonCompletionService";
-import { getStudentEnrollments } from "../../services/enrollmentService";
+import { useParams, Link } from "react-router-dom";
+import api from "../../services/api";
 
 function LessonDetails() {
 
@@ -10,138 +8,123 @@ function LessonDetails() {
 
     const [lesson, setLesson] = useState(null);
 
-    const [progress, setProgress] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
 
-        const loadLesson = async () => {
-
-            try {
-
-                const data = await getLessonById(lessonId);
-
-                setLesson(data);
-
-                const user = JSON.parse(localStorage.getItem("user"));
-
-                const enrollments = await getStudentEnrollments(user.id);
-
-                const enrollment = enrollments.find(
-                    (e) => e.courseId === data.courseId
-                );
-
-                if (enrollment) {
-                    setProgress(enrollment.progress);
-                }
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
-
-        };
-
         loadLesson();
 
-    }, [lessonId]);
+    }, []);
 
-    if (!lesson) {
-
-        return <h3 className="text-center mt-5">Loading...</h3>;
-
-    }
-
-    const handleCompleteLesson = async () => {
+    const loadLesson = async () => {
 
         try {
 
-            const user = JSON.parse(localStorage.getItem("user"));
+            const response =
+                await api.get(`/lessons/${lessonId}`);
 
-            await completeLesson(user.id, lesson.id);
+            setLesson(response.data);
 
-            const enrollments = await getStudentEnrollments(user.id);
+        }
 
-            const enrollment = enrollments.find(
-                (e) => e.courseId === lesson.courseId
-            );
+        catch (error) {
 
-            if (enrollment) {
-                setProgress(enrollment.progress);
-            }
+            console.error(error);
 
-            alert("Lesson completed successfully!");
+        }
 
-        } catch (error) {
+        finally {
 
-            if (error.response?.status === 409) {
-
-                alert("You have already completed this lesson.");
-
-            } else {
-
-                console.log(error);
-
-                alert("Unable to complete lesson.");
-
-            }
+            setLoading(false);
 
         }
 
     };
 
+    if (loading) {
+
+        return (
+            <div className="container py-5">
+                Loading lesson...
+            </div>
+        );
+
+    }
+
+    if (!lesson) {
+
+        return (
+            <div className="container py-5">
+                Lesson not found.
+            </div>
+        );
+
+    }
+
     return (
 
-        <div className="container mt-5">
+        <div className="container py-5">
 
-            <div className="card shadow">
+            <h2 className="fw-bold">
+
+                {lesson.title}
+
+            </h2>
+
+            <p className="text-muted">
+
+                Lesson {lesson.lessonOrder}
+
+            </p>
+
+            <div className="ratio ratio-16x9 rounded-4 overflow-hidden shadow my-4">
+
+                <iframe
+                    src={lesson.videoUrl.replace("watch?v=", "embed/")}
+                    title={lesson.title}
+                    allowFullScreen
+                />
+
+            </div>
+
+            <div className="card shadow-sm border-0 rounded-4">
 
                 <div className="card-body">
 
-                    <h2>{lesson.title}</h2>
+                    <h4 className="mb-3">
 
-                    <hr />
+                        Lesson Notes
 
-                    <p>{lesson.description}</p>
+                    </h4>
 
-                    <h5 className="mt-4">Video URL</h5>
+                    <p>
 
-                    <div className="ratio ratio-16x9 mt-4">
+                        {lesson.content}
 
-                        <iframe
-                            src={lesson.videoUrl.replace("watch?v=", "embed/")}
-                            title={lesson.title}
-                            allowFullScreen
-                        ></iframe>
-
-                    </div>
-
-                    <button
-                        className="btn btn-success"
-                        onClick={handleCompleteLesson}
-                    >
-                        Mark as Completed
-                    </button>
-
-                    <div className="mt-4">
-
-                        <h5>Course Progress</h5>
-
-                        <div className="progress">
-
-                            <div
-                                className="progress-bar bg-success"
-                                role="progressbar"
-                                style={{ width: `${progress}%` }}
-                            >
-                                {progress.toFixed(0)}%
-                            </div>
-
-                        </div>
-
-                    </div>
+                    </p>
 
                 </div>
+
+            </div>
+
+            <div className="d-flex justify-content-between mt-4">
+
+                <Link
+                    to={`/student/course/${lesson.courseId}/lessons`}
+                    className="btn btn-outline-secondary"
+                >
+
+                    Back
+
+                </Link>
+
+                <button
+                    className="btn btn-success"
+                >
+
+                    Mark Complete
+
+                </button>
 
             </div>
 

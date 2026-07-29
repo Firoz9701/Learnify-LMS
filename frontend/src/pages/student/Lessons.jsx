@@ -1,76 +1,107 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getLessonsByCourse } from "../../services/lessonService";
+import api from "../../services/api";
 
 function Lessons() {
 
     const { courseId } = useParams();
 
     const [lessons, setLessons] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-
-        const loadLessons = async () => {
-
-            try {
-
-                const data = await getLessonsByCourse(courseId);
-
-                setLessons(data);
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
-
-        };
-
         loadLessons();
+    }, []);
 
-    }, [courseId]);
+    const loadLessons = async () => {
+
+        try {
+
+            const response =
+                await api.get(`/lessons/course/${courseId}`);
+
+            setLessons(response.data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+    if (loading) {
+
+        return (
+            <div className="container py-5">
+                Loading lessons...
+            </div>
+        );
+
+    }
 
     return (
 
-        <div className="container mt-5">
+        <div className="container py-5">
 
-            <h2 className="mb-4">Course Lessons</h2>
+            <div className="mb-5">
 
-            {lessons.length === 0 ? (
+                <h2 className="fw-bold">
+                    Course Lessons
+                </h2>
 
-                <p>No lessons available.</p>
+                <p className="text-muted">
+                    Complete lessons in order.
+                </p>
 
-            ) : (
+            </div>
 
-                <div className="list-group">
+            <div className="list-group shadow-sm rounded-4">
 
-                    {lessons.map((lesson) => (
+                {lessons.map((lesson) => (
 
-                        <Link
-                            key={lesson.id}
-                            to={`/student/lesson/${lesson.id}`}
-                            className="list-group-item list-group-item-action"
-                        >
+                    <Link
+                        key={lesson.id}
+                        to={`/student/lesson/${lesson.id}`}
+                        className="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-4"
+                    >
 
-                            <strong>
+                        <div>
+
+                            <h5 className="mb-1">
+
                                 Lesson {lesson.lessonOrder}
-                            </strong>
 
-                            <br />
+                            </h5>
 
-                            {lesson.title}
+                            <p className="mb-0 text-muted">
 
-                        </Link>
+                                {lesson.title}
 
-                    ))}
+                            </p>
 
-                </div>
+                        </div>
 
-            )}
+                        <span className="btn btn-outline-primary">
+
+                            Watch →
+
+                        </span>
+
+                    </Link>
+
+                ))}
+
+            </div>
 
         </div>
 
     );
+
 }
 
 export default Lessons;

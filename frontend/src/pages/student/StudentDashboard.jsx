@@ -1,154 +1,271 @@
-import { useEffect, useState, useContext } from "react";
-import { getStudentDashboard, getMyCourses } from "../../services/dashboardService";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import AuthContext from "../../context/AuthContext";
-import { getMyAttempts } from "../../services/quizService";
+import api from "../../services/api";
 
 function StudentDashboard() {
 
-    const [dashboard, setDashboard] = useState(null);
+    const [user, setUser] = useState(null);
 
-    const [courses, setCourses] = useState([]);
+    const [stats, setStats] = useState({
+
+        totalCourses: 0,
+
+        completedLessons: 0
+
+    });
+
+    const [continueCourse, setContinueCourse] = useState(null);
 
     useEffect(() => {
-
-        const loadDashboard = async () => {
-
-            try {
-
-                const user = JSON.parse(localStorage.getItem("user"));
-
-                const data = await getStudentDashboard(user.id);
-
-                setDashboard(data);
-
-                const enrolledCourses = await getMyCourses(user.id);
-
-                setCourses(enrolledCourses);
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
-
-        };
 
         loadDashboard();
 
     }, []);
 
-    if (!dashboard) {
+    async function loadDashboard() {
 
-        return <h3 className="text-center mt-5">Loading...</h3>;
+        const currentUser =
+            JSON.parse(localStorage.getItem("user"));
 
-    }
+        setUser(currentUser);
 
-    const user = JSON.parse(localStorage.getItem("user"));
+        try {
+
+            const response =
+                await api.get(
+                    `/enrollments/student/${currentUser.id}`
+                );
+
+            setStats({
+
+                totalCourses: response.data.length,
+
+                completedLessons:
+                    response.data.reduce(
+                        (sum, c) => sum + c.completedLessons,
+                        0
+                    )
+
+            });
+
+            if (response.data.length > 0) {
+
+                setContinueCourse(response.data[0]);
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+        }
+
+    };
 
     return (
 
-        <div className="container mt-4">
+        <div className="container py-5">
 
-            {/* Welcome Banner */}
+            <div className="hero-card mb-5">
 
-            <div className="p-5 mb-4 bg-primary text-white rounded shadow">
+                <h2 className="fw-bold">
 
-                <h2>👋 Welcome Back, {user.firstName}!</h2>
+                    👋 Welcome back,
 
-                <p className="mb-3">
-                    Keep learning every day and track your progress.
+                    {" "}
+
+                    {user?.firstName}
+
+                </h2>
+
+                <p className="text-muted mb-0">
+
+                    Continue learning where you left off.
+
                 </p>
-
-                <a
-                    href="/courses"
-                    className="btn btn-light"
-                >
-                    Browse Courses
-                </a>
 
             </div>
 
-            {/* Statistics */}
+            <div className="row g-4 mb-5">
+
+                <div className="col-md-6">
+
+                    <div className="card stats-panel">
+
+                        <div className="card-body text-center">
+
+                            <h5>My Courses</h5>
+
+                            <h1 className="fw-bold">
+
+                                {stats.totalCourses}
+
+                            </h1>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div className="col-md-6">
+
+                    <div className="card stats-panel">
+
+                        <div className="card-body text-center">
+
+                            <h5>Lessons Completed</h5>
+
+                            <h1 className="fw-bold">
+
+                                {stats.completedLessons}
+
+                            </h1>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {continueCourse && (
+
+                <div className="card shadow-sm border-0 mb-5">
+
+                    <img
+                        src={`/images/${continueCourse.courseThumbnail}`}
+                        className="course-banner"
+                        alt=""
+                    />
+
+                    <div className="card-body">
+
+                        <h4>
+
+                            {continueCourse.courseTitle}
+
+                        </h4>
+
+                        <div className="progress my-3">
+
+                            <div
+                                className="progress-bar"
+                                style={{
+                                    width:
+                                        `${continueCourse.progress}%`
+                                }}
+                            >
+
+                                {Math.round(
+                                    continueCourse.progress
+                                )}
+
+                                %
+
+                            </div>
+
+                        </div>
+
+                        <Link
+                            to={`/student/course/${continueCourse.courseId}/lessons`}
+                            className="btn btn-primary"
+                        >
+
+                            Continue Learning
+
+                        </Link>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            <h3 className="mb-4">
+
+                Quick Actions
+
+            </h3>
 
             <div className="row g-4">
 
                 <div className="col-md-4">
 
-                    <div className="card border-0 shadow h-100">
-
-                        <div className="card-body text-center">
-
-                            <h1>📚</h1>
-
-                            <h5>Enrolled Courses</h5>
-
-                            <h2>{dashboard.enrolledCourses}</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div className="col-md-4">
-
-                    <div className="card border-0 shadow h-100">
-
-                        <div className="card-body text-center">
-
-                            <h1>🎯</h1>
-
-                            <h5>Completed Lessons</h5>
-
-                            <h2>{dashboard.completedLessons}</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div className="col-md-4">
-
-                    <div className="card border-0 shadow h-100">
-
-                        <div className="card-body text-center">
-
-                            <h1>📈</h1>
-
-                            <h5>Overall Progress</h5>
-
-                            <h2>{dashboard.overallProgress.toFixed(0)}%</h2>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* Progress */}
-
-            <div className="card shadow mt-5">
-
-                <div className="card-body">
-
-                    <h4>Overall Progress</h4>
-
-                    <div
-                        className="progress mt-3"
-                        style={{ height: "30px" }}
+                    <Link
+                        to="/courses"
+                        className="text-decoration-none"
                     >
 
-                        <div
-                            className="progress-bar bg-success progress-bar-striped progress-bar-animated"
-                            style={{
-                                width: `${dashboard.overallProgress}%`
-                            }}
-                        >
-                            {dashboard.overallProgress.toFixed(0)}%
+                        <div className="card h-100 shadow-sm">
+
+                            <div className="card-body text-center">
+
+                                <h4>📚</h4>
+
+                                <h5>
+
+                                    Browse Courses
+
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+                    </Link>
+
+                </div>
+
+                <div className="col-md-4">
+
+                    <Link
+                        to="/student/my-courses"
+                        className="text-decoration-none"
+                    >
+
+                        <div className="card h-100 shadow-sm">
+
+                            <div className="card-body text-center">
+
+                                <h4>🎓</h4>
+
+                                <h5>
+
+                                    My Courses
+
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+                    </Link>
+
+                </div>
+
+                <div className="col-md-4">
+
+                    <div className="card h-100 shadow-sm">
+
+                        <div className="card-body text-center">
+
+                            <h4>👤</h4>
+
+                            <h5>
+
+                                Profile
+
+                            </h5>
+
+                            <small className="text-muted">
+
+                                Coming Soon
+
+                            </small>
 
                         </div>
 
@@ -156,91 +273,6 @@ function StudentDashboard() {
 
                 </div>
 
-            </div>
-
-            {/* Enrolled Courses */}
-
-            <div className="mt-5">
-
-                <h3 className="mb-4">
-
-                    Continue Learning
-
-                </h3>
-
-                <div className="row">
-
-                    {courses.map((course) => (
-
-                        <div
-                            className="col-md-4"
-                            key={course.id}
-                        >
-
-                            <div className="card shadow">
-
-                                <div className="card-body">
-
-                                    <h5>
-
-                                        {course.courseTitle}
-
-                                    </h5>
-
-                                    <p>
-
-                                        Progress {course.progress}%
-
-                                    </p>
-
-                                    <div className="progress mb-3">
-
-                                        <div
-                                            className="progress-bar"
-                                            style={{
-                                                width: `${course.progress}%`
-                                            }}
-                                        >
-
-                                            {course.progress}%
-
-                                        </div>
-
-                                    </div>
-
-                                    <Link
-                                        to={`/courses/${course.courseId}`}
-                                        className="btn btn-primary"
-                                    >
-                                        Continue Learning
-                                    </Link>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    ))}
-
-                </div>
-
-            </div>
-
-            {/* Recent Quizzes */}
-            <div className="mt-5">
-                <h3 className="mb-4">Recent Quizzes</h3>
-
-                <div className="row">
-                    <div className="col-md-6">
-                        <div className="card shadow p-3">
-                            <div className="card-body">
-                                <h5 className="card-title">Saved Quiz Results</h5>
-                                <QuizResults />
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
         </div>
@@ -250,58 +282,3 @@ function StudentDashboard() {
 }
 
 export default StudentDashboard;
-
-function QuizResults() {
-    const [results, setResults] = useState([]);
-    const { user } = useContext(AuthContext);
-
-    useEffect(() => {
-        const load = async () => {
-            if (user && user.email) {
-                try {
-                    const res = await getMyAttempts();
-                    const data = res.data;
-                    if (Array.isArray(data) && data.length) {
-                        const mapped = data.map((d) => ({ courseId: d.courseId, score: d.score, timestamp: new Date(d.attemptedAt).getTime() }));
-                        setResults(mapped.slice(0, 10));
-                        return;
-                    }
-                } catch (e) {
-                    console.log('Failed to load server quiz attempts', e);
-                }
-            }
-
-            // Fallback to localStorage
-            const items = [];
-            for (const key in localStorage) {
-                if (Object.prototype.hasOwnProperty.call(localStorage, key) && key.startsWith('quizResult_')) {
-                    try {
-                        const val = JSON.parse(localStorage.getItem(key));
-                        const courseId = key.replace('quizResult_', '');
-                        items.push({ courseId, score: val.score, timestamp: val.timestamp });
-                    } catch (e) { }
-                }
-            }
-
-            items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            setResults(items.slice(0, 10));
-        };
-
-        load();
-    }, [user]);
-
-    if (results.length === 0) return <div className="text-muted">No quiz attempts saved yet.</div>;
-
-    return (
-        <div>
-            <ul className="list-group list-group-flush">
-                {results.map((r) => (
-                    <li className="list-group-item d-flex justify-content-between align-items-center" key={r.courseId}>
-                        <div>Course #{r.courseId}</div>
-                        <div><strong>{r.score}%</strong></div>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-}

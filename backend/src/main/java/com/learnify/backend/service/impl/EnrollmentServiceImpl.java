@@ -14,6 +14,9 @@ import com.learnify.backend.dto.enrollment.EnrollmentResponse;
 import com.learnify.backend.service.EnrollmentService;
 import org.springframework.stereotype.Service;
 
+import com.learnify.backend.repository.LessonRepository;
+import com.learnify.backend.repository.LessonProgressRepository;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -21,86 +24,116 @@ import java.util.List;
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
 
-    private final EnrollmentRepository enrollmentRepository;
-    private final UserRepository userRepository;
-    private final CourseRepository courseRepository;
+        private final EnrollmentRepository enrollmentRepository;
+        private final UserRepository userRepository;
+        private final CourseRepository courseRepository;
+        private final LessonRepository lessonRepository;
+        private final LessonProgressRepository lessonProgressRepository;
 
-    public EnrollmentServiceImpl(
-            EnrollmentRepository enrollmentRepository,
-            UserRepository userRepository,
-            CourseRepository courseRepository) {
+        public EnrollmentServiceImpl(
+                        EnrollmentRepository enrollmentRepository,
+                        UserRepository userRepository,
+                        CourseRepository courseRepository, LessonRepository lessonRepository,
+                        LessonProgressRepository lessonProgressRepository) {
 
-        this.enrollmentRepository = enrollmentRepository;
-        this.userRepository = userRepository;
-        this.courseRepository = courseRepository;
-    }
-
-    @Override
-        @Transactional
-    public EnrollmentResponse enrollStudent(Long studentId,
-            EnrollmentRequest request) {
-
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found."));
-
-        Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
-
-        if (enrollmentRepository.existsByStudentIdAndCourseId(
-                studentId, request.getCourseId())) {
-
-            throw new ResourceAlreadyExistsException(
-                    "Student is already enrolled in this course.");
+                this.enrollmentRepository = enrollmentRepository;
+                this.userRepository = userRepository;
+                this.courseRepository = courseRepository;
+                this.lessonRepository = lessonRepository;
+                this.lessonProgressRepository = lessonProgressRepository;
         }
 
-        Enrollment enrollment = new Enrollment();
+        @Override
+        @Transactional
+        public EnrollmentResponse enrollStudent(Long studentId,
+                        EnrollmentRequest request) {
 
-        enrollment.setStudent(student);
-        enrollment.setCourse(course);
+                User student = userRepository.findById(studentId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Student not found."));
 
-        Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+                Course course = courseRepository.findById(request.getCourseId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
 
-        return mapToResponse(savedEnrollment);
-    }
+                if (enrollmentRepository.existsByStudentIdAndCourseId(
+                                studentId, request.getCourseId())) {
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<EnrollmentResponse> getStudentEnrollments(Long studentId) {
+                        throw new ResourceAlreadyExistsException(
+                                        "Student is already enrolled in this course.");
+                }
 
-        return enrollmentRepository.findByStudentId(studentId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                Enrollment enrollment = new Enrollment();
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<EnrollmentResponse> getCourseEnrollments(Long courseId) {
-        return enrollmentRepository.findByCourseId(courseId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                enrollment.setStudent(student);
+                enrollment.setCourse(course);
 
-    private EnrollmentResponse mapToResponse(Enrollment enrollment) {
+                Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
 
-        EnrollmentResponse response = new EnrollmentResponse();
+                return mapToResponse(savedEnrollment);
+        }
 
-        response.setId(enrollment.getId());
+        @Override
+        @Transactional(readOnly = true)
+        public List<EnrollmentResponse> getStudentEnrollments(Long studentId) {
 
-        response.setStudentId(enrollment.getStudent().getId());
+                return enrollmentRepository.findByStudentId(studentId)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-        response.setCourseId(enrollment.getCourse().getId());
+        @Override
+        @Transactional(readOnly = true)
+        public List<EnrollmentResponse> getCourseEnrollments(Long courseId) {
+                return enrollmentRepository.findByCourseId(courseId)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-        response.setCourseTitle(
-                enrollment.getCourse().getTitle());
+        private EnrollmentResponse mapToResponse(Enrollment enrollment) {
 
-        response.setEnrolledAt(
-                enrollment.getEnrolledAt());
+                EnrollmentResponse response = new EnrollmentResponse();
 
-        response.setProgress(
-                enrollment.getProgress());
+                response.setId(enrollment.getId());
 
-        return response;
-    }
+                response.setStudentId(
+                                enrollment.getStudent().getId());
+
+                response.setCourseId(
+                                enrollment.getCourse().getId());
+
+                response.setCourseTitle(
+                                enrollment.getCourse().getTitle());
+
+                response.setCourseThumbnail(
+                                enrollment.getCourse().getThumbnail());
+
+                response.setEnrolledAt(
+                                enrollment.getEnrolledAt());
+
+                long totalLessons = lessonRepository.countByCourseId(
+                                enrollment.getCourse().getId());
+
+                long completedLessons = lessonProgressRepository
+                                .countByStudentIdAndLessonCourseIdAndCompletedTrue(
+                                                enrollment.getStudent().getId(),
+                                                enrollment.getCourse().getId());
+
+                response.setTotalLessons((int) totalLessons);
+
+                response.setCompletedLessons((int) completedLessons);
+
+                if (totalLessons == 0) {
+
+                        response.setProgress(0.0);
+
+                } else {
+
+                        response.setProgress(
+                                        completedLessons * 100.0 / totalLessons);
+
+                }
+
+                return response;
+        }
 }

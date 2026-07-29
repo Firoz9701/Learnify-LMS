@@ -21,4 +21,10 @@ public class EnrollmentResponse {
 
     private Double progress;
 
+    private String courseThumbnail;
+
+    private Integer totalLessons;
+
+    private Integer completedLessons;
+
 }

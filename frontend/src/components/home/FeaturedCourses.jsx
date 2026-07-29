@@ -3,77 +3,139 @@ import { Link } from "react-router-dom";
 import { getAllCourses, getCourseImage } from "../../services/courseService";
 
 function FeaturedCourses() {
+
     const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchCourses = async () => {
+
+        const loadCourses = async () => {
+
             try {
-                const data = await getAllCourses(0, 6);
-                setCourses(data.slice(0, 6));
+
+                const data = await getAllCourses(0, 4);
+
+                setCourses(data);
+
             } catch (error) {
-                console.error("Failed to load featured courses", error);
-                setCourses([]);
-            } finally {
-                setLoading(false);
+
+                console.error(error);
+
             }
+
         };
 
-        fetchCourses();
+        loadCourses();
+
     }, []);
 
     return (
-        <section id="courses" className="py-5 bg-white">
+
+        <section className="py-5">
+
             <div className="container">
-                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                    <div>
-                        <p className="text-primary fw-semibold mb-1">Featured courses</p>
-                        <h2 className="h3 fw-bold">Trending learning paths for today’s builders</h2>
-                    </div>
-                    <Link to="/courses" className="text-decoration-none fw-semibold">
-                        View all courses
-                    </Link>
+
+                <div className="text-center mb-5">
+
+                    <span className="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                        Featured Courses
+                    </span>
+
+                    <h2 className="fw-bold mt-3">
+                        Learn From Our Most Popular Courses
+                    </h2>
+
+                    <p className="text-muted">
+                        Start learning with our most loved industry-ready courses.
+                    </p>
+
                 </div>
 
-                {loading ? (
-                    <p className="text-muted">Loading featured courses...</p>
-                ) : courses.length === 0 ? (
-                    <p className="text-muted">No courses are available right now.</p>
-                ) : (
-                    <div className="row g-4">
-                        {courses.map((course) => (
-                            <div className="col-md-6 col-lg-4" key={course.id}>
-                                <div className="card h-100 border-0 shadow-sm course-card">
-                                    <div className="course-image-wrapper">
-                                        <img
-                                            src={getCourseImage(course)}
-                                            alt={course.title}
-                                            className="card-img-top course-banner"
-                                            onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = "/images/reactjs.png";
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="card-body p-4">
-                                        <span className="badge rounded-pill bg-light text-primary mb-3">{course.category || "Featured"}</span>
-                                        <h3 className="h5 fw-bold">{course.title}</h3>
-                                        <p className="text-muted mt-2">{course.description}</p>
-                                    </div>
-                                    <div className="card-footer bg-transparent border-0 px-4 pb-4 pt-0 d-flex justify-content-between align-items-center text-muted small">
-                                        <span className="fw-semibold text-dark">₹ {course.price}</span>
-                                        <Link to={`/courses/${course.id}`} className="text-decoration-none fw-semibold text-primary">
-                                            View details
-                                        </Link>
-                                    </div>
+                <div className="row g-4">
+
+                    {courses.map((course) => (
+
+                        <div className="col-md-6 col-lg-3" key={course.id}>
+
+                            <div className="card border-0 shadow-sm course-card h-100">
+
+                                <div className="course-image-wrapper">
+
+                                    <img
+                                        src={getCourseImage(course)}
+                                        alt={course.title}
+                                        className="course-banner"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = "/images/react.jpg";
+                                        }}
+                                    />
+
                                 </div>
+
+                                <div className="card-body d-flex flex-column">
+
+                                    <div className="d-flex justify-content-between mb-2">
+
+                                        <span className="badge bg-warning text-dark">
+                                            ⭐ 4.9
+                                        </span>
+
+                                        <span className="badge bg-light text-dark">
+                                            Beginner
+                                        </span>
+
+                                    </div>
+
+                                    <h5 className="fw-bold">
+                                        {course.title}
+                                    </h5>
+
+                                    <p className="text-muted flex-grow-1 featured-description">
+                                        {course.description}
+                                    </p>
+
+                                    <div className="d-flex justify-content-between align-items-center">
+
+                                        <h5 className="text-primary fw-bold mb-0">
+                                            ₹ {course.price}
+                                        </h5>
+
+                                        <Link
+                                            to={`/courses/${course.id}`}
+                                            className="btn btn-primary rounded-pill"
+                                        >
+                                            View
+                                        </Link>
+
+                                    </div>
+
+                                </div>
+
                             </div>
-                        ))}
-                    </div>
-                )}
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+                <div className="text-center mt-5">
+
+                    <Link
+                        to="/courses"
+                        className="btn btn-outline-primary btn-lg rounded-pill"
+                    >
+                        View All Courses
+                    </Link>
+
+                </div>
+
             </div>
+
         </section>
+
     );
+
 }
 
 export default FeaturedCourses;

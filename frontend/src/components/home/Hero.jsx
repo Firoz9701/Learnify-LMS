@@ -1,59 +1,164 @@
+import { Link } from "react-router-dom";
+
 function Hero() {
     return (
         <section className="hero-section">
-            <div className="container py-5">
-                <div className="row align-items-center g-5">
-                    <div className="col-lg-7">
-                        <span className="badge rounded-pill hero-badge">New • AI-Powered Learning</span>
-                        <h1 className="display-4 fw-bold text-dark mt-3">
-                            Learn faster with a modern LMS built for growth.
+            <div className="container">
+
+                <div className="row align-items-center gy-5">
+
+                    <div className="col-lg-6">
+
+                        <span className="badge hero-badge rounded-pill mb-3">
+                            🚀 Learn Without Limits
+                        </span>
+
+                        <h1 className="display-4 fw-bold mb-4">
+                            Master Modern Tech Skills
+                            <span className="text-primary"> with Learnify</span>
                         </h1>
-                        <p className="lead text-muted mt-3">
-                            Discover expert-led courses, track your progress, and turn knowledge into real-world results with a beautifully simple learning experience.
+
+                        <p className="lead text-muted mb-4">
+                            Build real-world projects in Java, Spring Boot,
+                            React, Python, Docker, AWS and much more.
+                            Learn from industry-focused courses designed to
+                            make you job-ready.
                         </p>
 
-                        <div className="d-flex flex-wrap gap-3 mt-4">
-                            <a href="#courses" className="btn btn-primary btn-lg px-4 rounded-pill hero-btn">
+                        <div className="d-flex flex-wrap gap-3">
+
+                            <Link
+                                to="/courses"
+                                className="btn btn-primary btn-lg rounded-pill hero-btn"
+                            >
                                 Explore Courses
-                            </a>
-                            <a href="#why-learnify" className="btn btn-outline-secondary btn-lg px-4 rounded-pill hero-btn">
-                                Why Learnify
-                            </a>
+                            </Link>
+
+                            <Link
+                                to="/register"
+                                className="btn btn-outline-primary btn-lg rounded-pill hero-btn"
+                            >
+                                Get Started
+                            </Link>
+
                         </div>
 
-                        <div className="d-flex flex-wrap gap-4 mt-4 text-muted">
-                            <div>
-                                <strong className="text-dark">10k+</strong>
-                                <div className="small">Active learners</div>
+                        <div className="row mt-5">
+
+                            <div className="col-4 text-center">
+
+                                <h3 className="fw-bold text-primary">
+                                    12+
+                                </h3>
+
+                                <small className="text-muted">
+                                    Courses
+                                </small>
+
                             </div>
-                            <div>
-                                <strong className="text-dark">250+</strong>
-                                <div className="small">Expert-led lessons</div>
+
+                            <div className="col-4 text-center">
+
+                                <h3 className="fw-bold text-primary">
+                                    1200+
+                                </h3>
+
+                                <small className="text-muted">
+                                    Students
+                                </small>
+
                             </div>
-                            <div>
-                                <strong className="text-dark">4.9/5</strong>
-                                <div className="small">Student rating</div>
+
+                            <div className="col-4 text-center">
+
+                                <h3 className="fw-bold text-primary">
+                                    4.9★
+                                </h3>
+
+                                <small className="text-muted">
+                                    Rating
+                                </small>
+
                             </div>
+
                         </div>
+
                     </div>
 
-                    <div className="col-lg-5">
+                    <div className="col-lg-6">
+
                         <div className="hero-card">
+
                             <div className="hero-card-content">
-                                <div className="hero-icon">📚</div>
-                                <h3 className="h5 fw-bold mt-3">Your personalized learning hub</h3>
-                                <p className="text-muted mb-3">
-                                    Join structured courses, complete lessons, and build skills at your own pace.
-                                </p>
-                                <ul className="list-unstyled small text-muted">
-                                    <li>✓ Live progress dashboard</li>
-                                    <li>✓ Career-focused learning paths</li>
-                                    <li>✓ Certificates on completion</li>
-                                </ul>
+
+                                <div className="d-flex align-items-center mb-4">
+
+                                    <div className="hero-icon">
+                                        🎓
+                                    </div>
+
+                                    <div className="ms-3">
+
+                                        <h5 className="mb-1">
+                                            Learn Smarter
+                                        </h5>
+
+                                        <small className="text-muted">
+                                            Industry-ready learning platform
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+                                <div className="row g-3">
+
+                                    <div className="col-6">
+                                        <div className="card border-0 shadow-sm p-3 text-center">
+                                            <h3 className="text-primary fw-bold">
+                                                12
+                                            </h3>
+                                            <small>Premium Courses</small>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-6">
+                                        <div className="card border-0 shadow-sm p-3 text-center">
+                                            <h3 className="text-success fw-bold">
+                                                25+
+                                            </h3>
+                                            <small>Lessons</small>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-6">
+                                        <div className="card border-0 shadow-sm p-3 text-center">
+                                            <h3 className="text-warning fw-bold">
+                                                95%
+                                            </h3>
+                                            <small>Completion Rate</small>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-6">
+                                        <div className="card border-0 shadow-sm p-3 text-center">
+                                            <h3 className="text-danger fw-bold">
+                                                ∞
+                                            </h3>
+                                            <small>Lifetime Access</small>
+                                        </div>
+                                    </div>
+
+                                </div>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
         </section>
     );
