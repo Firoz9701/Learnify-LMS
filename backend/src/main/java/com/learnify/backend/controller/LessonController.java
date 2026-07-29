@@ -7,6 +7,7 @@ import com.learnify.backend.service.LessonService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class LessonController {
         this.lessonService = lessonService;
     }
 
+    @PreAuthorize("hasAnyRole('INSTRUCTOR','ADMIN')")
     @PostMapping
     public ResponseEntity<LessonResponse> createLesson(
             @Valid @RequestBody LessonRequest request) {
@@ -45,7 +47,8 @@ public class LessonController {
         return ResponseEntity.ok(
                 lessonService.getLessonById(id));
     }
-
+    
+    @PreAuthorize("hasAnyRole('INSTRUCTOR','ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LessonResponse> updateLesson(
             @PathVariable Long id,
@@ -55,6 +58,7 @@ public class LessonController {
                 lessonService.updateLesson(id, request));
     }
 
+    @PreAuthorize("hasAnyRole('INSTRUCTOR','ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLesson(
             @PathVariable Long id) {

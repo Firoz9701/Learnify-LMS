@@ -268,3 +268,124 @@ section {
 .admin-role-select {
   min-width: 135px;
 }
+
+.instructor-page .card {
+  border-radius: 1.25rem;
+}
+
+.instructor-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 55%, #f8f7ff 100%);
+}
+
+.instructor-panel {
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.instructor-stat-card {
+  border: 1px solid rgba(79, 70, 229, 0.08);
+}
+
+.instructor-note-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f7ff 100%);
+  border: 1px dashed rgba(79, 70, 229, 0.2);
+}
+
+.instructor-action-card {
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.instructor-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1) !important;
+}
+
+.instructor-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f46e5;
+}
+
+.instructor-page form.card {
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08) !important;
+  border-radius: 1.25rem;
+}
+
+.instructor-page form.card h4 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.instructor-page form.card .btn {
+  align-self: flex-start;
+}
+
+.instructor-course-filter {
+  max-width: 420px;
+}
+
+.instructor-form .form-label {
+  color: #374151;
+}
+
+.instructor-form .form-control,
+.instructor-form .form-select {
+  border-radius: 0.8rem;
+  border-color: rgba(79, 70, 229, 0.18);
+}
+
+.instructor-form .form-control:focus,
+.instructor-form .form-select:focus {
+  border-color: rgba(79, 70, 229, 0.6);
+  box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.16);
+}
+
+.course-details-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 55%, #f8f7ff 100%);
+}
+
+.course-details-main,
+.course-details-side {
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  border-radius: 1.25rem;
+}
+
+.course-learn-box {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f7ff 100%);
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+}
+
+.course-learn-list {
+  padding-left: 1.1rem;
+}
+
+.course-learn-list li {
+  margin-bottom: 0.45rem;
+  color: #4b5563;
+}
+
+.course-quiz-panel {
+  border-left: 4px solid rgba(79, 70, 229, 0.45);
+  padding: 0.4rem 0 0.4rem 0.9rem;
+}
+
+.course-perks {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.course-perk-item {
+  background: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  color: #334155;
+  font-weight: 500;
+}

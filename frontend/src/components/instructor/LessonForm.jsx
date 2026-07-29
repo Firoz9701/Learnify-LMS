@@ -60,78 +60,106 @@ function LessonForm({ onSubmit, editingLesson, courses }) {
     return (
 
         <form
-            className="card shadow p-4 mb-4"
+            className="card shadow p-4 mb-4 instructor-form"
             onSubmit={handleSubmit}
         >
 
-            <h4>
+            <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                <div>
+                    <p className="instructor-kicker mb-2">Lesson Editor</p>
+                    <h4 className="fw-bold mb-1">
+                        {editingLesson ? "Edit Lesson" : "Create Lesson"}
+                    </h4>
+                    <p className="text-muted mb-0">
+                        Build lesson content and assign it to the right course sequence.
+                    </p>
+                </div>
 
-                {editingLesson ? "Edit Lesson" : "Create Lesson"}
+                <span className={`badge ${editingLesson ? "text-bg-warning" : "text-bg-primary"}`}>
+                    {editingLesson ? "Editing Mode" : "New Lesson"}
+                </span>
+            </div>
 
-            </h4>
+            <div className="row g-3">
+                <div className="col-md-8">
+                    <label className="form-label fw-semibold">Lesson Title</label>
+                    <input
+                        className="form-control"
+                        name="title"
+                        placeholder="e.g. Introduction to React Components"
+                        value={lesson.title}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-            <input
-                className="form-control mb-3"
-                name="title"
-                placeholder="Lesson Title"
-                value={lesson.title}
-                onChange={handleChange}
-                required
-            />
+                <div className="col-md-4">
+                    <label className="form-label fw-semibold">Lesson Order</label>
+                    <input
+                        className="form-control"
+                        name="lessonOrder"
+                        type="number"
+                        placeholder="1"
+                        value={lesson.lessonOrder}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-            <textarea
-                className="form-control mb-3"
-                name="content"
-                placeholder="Lesson Content"
-                value={lesson.content}
-                onChange={handleChange}
-                required
-            />
-
-            <input
-                className="form-control mb-3"
-                name="lessonOrder"
-                type="number"
-                placeholder="Lesson Order"
-                value={lesson.lessonOrder}
-                onChange={handleChange}
-                required
-            />
-
-            <input
-                className="form-control mb-3"
-                name="videoUrl"
-                placeholder="Video URL"
-                value={lesson.videoUrl}
-                onChange={handleChange}
-            />
-
-            <select
-                className="form-select mb-3"
-                name="courseId"
-                value={lesson.courseId}
-                onChange={handleChange}
-                required
-            >
-
-                <option value="">
-                    Select Course
-                </option>
-
-                {courses.map(course => (
-
-                    <option
-                        key={course.id}
-                        value={course.id}
+                <div className="col-md-6">
+                    <label className="form-label fw-semibold">Course</label>
+                    <select
+                        className="form-select"
+                        name="courseId"
+                        value={lesson.courseId}
+                        onChange={handleChange}
+                        required
                     >
-                        {course.title}
-                    </option>
 
-                ))}
+                        <option value="">
+                            Select Course
+                        </option>
 
-            </select>
+                        {courses.map(course => (
 
-            <div className="form-check mb-3">
+                            <option
+                                key={course.id}
+                                value={course.id}
+                            >
+                                {course.title}
+                            </option>
+
+                        ))}
+
+                    </select>
+                </div>
+
+                <div className="col-md-6">
+                    <label className="form-label fw-semibold">Video URL</label>
+                    <input
+                        className="form-control"
+                        name="videoUrl"
+                        placeholder="https://example.com/video"
+                        value={lesson.videoUrl}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className="col-12">
+                    <label className="form-label fw-semibold">Lesson Content</label>
+                    <textarea
+                        className="form-control"
+                        name="content"
+                        rows="4"
+                        placeholder="Write lesson notes, outline, or explanation."
+                        value={lesson.content}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+            </div>
+
+            <div className="form-check mt-4 mb-4">
 
                 <input
                     className="form-check-input"
@@ -139,17 +167,18 @@ function LessonForm({ onSubmit, editingLesson, courses }) {
                     name="freePreview"
                     checked={lesson.freePreview}
                     onChange={handleChange}
+                    id="lessonFreePreview"
                 />
 
-                <label className="form-check-label">
+                <label className="form-check-label fw-semibold" htmlFor="lessonFreePreview">
 
-                    Free Preview
+                    Mark as Free Preview
 
                 </label>
 
             </div>
 
-            <button className="btn btn-success">
+            <button className="btn btn-primary">
 
                 {editingLesson ? "Update Lesson" : "Create Lesson"}
 

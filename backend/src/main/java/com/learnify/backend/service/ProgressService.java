@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface ProgressService {
 
-    ProgressResponse completeLesson(Long studentId,
-                                    ProgressRequest request);
+    ProgressResponse completeLesson(
+            ProgressRequest request);
 
-    List<ProgressResponse> getStudentProgress(Long studentId);
+    List<ProgressResponse> getStudentProgress();
 }

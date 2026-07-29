@@ -81,7 +81,7 @@ public class UserSeeder implements CommandLineRunner {
         user.setLastName("Student");
         user.setEmail("student@learnify.com");
         user.setPhoneNumber("8888888888");
-        user.setPassword(passwordEncoder.encode("student123"));
+        user.setPassword(passwordEncoder.encode("Student@123"));
         user.setEnabled(true);
         user.setRole(role);
 

@@ -82,37 +82,55 @@ function CourseDetails() {
     };
 
     if (!course) {
-        return <h3 className="text-center mt-5">Loading...</h3>;
+        return (
+            <div className="container py-5">
+                <div className="hero-card course-details-hero text-center">
+                    <h3 className="fw-bold mb-2">Loading course details...</h3>
+                    <p className="text-muted mb-0">Please wait while we fetch course information.</p>
+                </div>
+            </div>
+        );
     }
 
     return (
 
-        <div className="container mt-5">
+        <div className="container py-5">
 
-            <div className="row">
+            <div className="hero-card course-details-hero mb-4">
+                <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <p className="instructor-kicker mb-2">Course Overview</p>
+                        <h2 className="fw-bold mb-2">{course.title}</h2>
+                        <p className="text-muted mb-0">
+                            Learn with structured lessons, guided practice, and a quiz after enrollment.
+                        </p>
+                    </div>
+                    <span className={`badge ${course.published ? "text-bg-success" : "text-bg-secondary"}`}>
+                        {course.published ? "Published" : "Draft"}
+                    </span>
+                </div>
+            </div>
+
+            <div className="row g-4">
 
                 {/* Left Side */}
                 <div className="col-lg-8">
 
-                    <div className="card shadow-sm">
+                    <div className="card shadow-sm border-0 course-details-main">
 
-                        <div className="card-body">
+                        <div className="card-body p-4 p-lg-5">
 
-                            <h2 className="fw-bold">
-                                {course.title}
-                            </h2>
+                            <h4 className="fw-bold mb-3">About This Course</h4>
 
-                            <hr />
-
-                            <p className="text-muted">
+                            <p className="text-muted mb-4">
                                 {course.description}
                             </p>
 
-                            <div className="mt-4">
+                            <div className="course-learn-box mb-4">
 
-                                <h5>What you'll learn</h5>
+                                <h5 className="fw-bold mb-3">What you will learn</h5>
 
-                                <ul>
+                                <ul className="course-learn-list mb-0">
 
                                     <li>Complete understanding of this course.</li>
 
@@ -124,6 +142,13 @@ function CourseDetails() {
 
                                 </ul>
 
+                            </div>
+
+                            <div className="course-quiz-panel">
+                                <h5 className="fw-bold mb-2">Assessment Quiz</h5>
+                                <p className="text-muted mb-0">
+                                    Quiz access is available only to enrolled students.
+                                </p>
                             </div>
 
                             {checkingEnrollment ? (
@@ -146,9 +171,9 @@ function CourseDetails() {
 
                 <div className="col-lg-4">
 
-                    <div className="card shadow">
+                    <div className="card shadow-sm border-0 course-details-side">
 
-                        <div className="card-body text-center">
+                        <div className="card-body p-4">
 
                             <div className="course-image-wrapper mb-3">
                                 <img
@@ -159,14 +184,17 @@ function CourseDetails() {
                                 />
                             </div>
 
-                            <h3 className="text-success">
+                            <div className="d-flex align-items-center justify-content-between mb-3">
+                                <span className="text-muted">Price</span>
+                                <h3 className="text-success fw-bold mb-0">
 
-                                ₹ {course.price}
+                                    ₹ {course.price}
 
-                            </h3>
+                                </h3>
+                            </div>
 
                             <button
-                                className="btn btn-success w-100 mt-3"
+                                className="btn btn-primary w-100"
                                 onClick={handleEnroll}
                             >
 
@@ -174,31 +202,12 @@ function CourseDetails() {
 
                             </button>
 
-                            <hr />
-
-                            <p>
-
-                                📚 Lifetime Access
-
-                            </p>
-
-                            <p>
-
-                                🎥 Video Lessons
-
-                            </p>
-
-                            <p>
-
-                                📝 Practice Exercises
-
-                            </p>
-
-                            <p>
-
-                                🏆 Completion Certificate
-
-                            </p>
+                            <div className="course-perks mt-4">
+                                <div className="course-perk-item">📚 Lifetime Access</div>
+                                <div className="course-perk-item">🎥 Video Lessons</div>
+                                <div className="course-perk-item">📝 Practice Exercises</div>
+                                <div className="course-perk-item">🏆 Completion Certificate</div>
+                            </div>
 
                         </div>
 

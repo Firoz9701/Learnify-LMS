@@ -4,16 +4,21 @@ import com.learnify.backend.dto.progress.ProgressRequest;
 import com.learnify.backend.dto.progress.ProgressResponse;
 import com.learnify.backend.entity.auth.User;
 import com.learnify.backend.entity.enrollment.Enrollment;
+
 import com.learnify.backend.entity.lesson.Lesson;
 import com.learnify.backend.entity.progress.LessonProgress;
+import com.learnify.backend.security.SecurityUtils;
+
 import com.learnify.backend.exception.ResourceAlreadyExistsException;
 import com.learnify.backend.exception.ResourceNotFoundException;
 import com.learnify.backend.repository.EnrollmentRepository;
 import com.learnify.backend.repository.LessonProgressRepository;
+
 import com.learnify.backend.repository.LessonRepository;
 import com.learnify.backend.repository.UserRepository;
 import com.learnify.backend.service.ProgressService;
 import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -22,93 +27,105 @@ import java.util.List;
 @Service
 public class ProgressServiceImpl implements ProgressService {
 
-    private final LessonProgressRepository lessonProgressRepository;
-    private final UserRepository userRepository;
-    private final LessonRepository lessonRepository;
-    private final EnrollmentRepository enrollmentRepository;
+        private final LessonProgressRepository lessonProgressRepository;
+        private final UserRepository userRepository;
+        private final LessonRepository lessonRepository;
+        private final EnrollmentRepository enrollmentRepository;
 
-    public ProgressServiceImpl(LessonProgressRepository lessonProgressRepository,
-            UserRepository userRepository,
-            LessonRepository lessonRepository,
-            EnrollmentRepository enrollmentRepository) {
-        this.lessonProgressRepository = lessonProgressRepository;
-        this.userRepository = userRepository;
-        this.lessonRepository = lessonRepository;
-        this.enrollmentRepository = enrollmentRepository;
-    }
-
-    @Override
-        @Transactional
-    public ProgressResponse completeLesson(Long studentId,
-            ProgressRequest request) {
-
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found."));
-
-        Lesson lesson = lessonRepository.findById(request.getLessonId())
-                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found."));
-
-        if (lessonProgressRepository.existsByStudentIdAndLessonId(
-                studentId, request.getLessonId())) {
-
-            throw new ResourceAlreadyExistsException(
-                    "Lesson already completed.");
+        public ProgressServiceImpl(LessonProgressRepository lessonProgressRepository,
+                        UserRepository userRepository,
+                        LessonRepository lessonRepository,
+                        EnrollmentRepository enrollmentRepository) {
+                this.lessonProgressRepository = lessonProgressRepository;
+                this.userRepository = userRepository;
+                this.lessonRepository = lessonRepository;
+                this.enrollmentRepository = enrollmentRepository;
         }
 
-        LessonProgress lessonProgress = new LessonProgress();
+        @Override
+        @Transactional
+        public ProgressResponse completeLesson(ProgressRequest request) {
 
-        lessonProgress.setStudent(student);
-        lessonProgress.setLesson(lesson);
-        lessonProgress.setCompleted(true);
-        lessonProgress.setCompletedAt(LocalDateTime.now());
+                User student = getCurrentUser();
 
-        LessonProgress savedProgress = lessonProgressRepository.save(lessonProgress);
+                Long studentId = student.getId();
 
-        updateEnrollmentProgress(studentId, lesson.getCourse().getId());
+                Lesson lesson = lessonRepository.findById(request.getLessonId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found."));
 
-        return mapToResponse(savedProgress);
-    }
+                if (lessonProgressRepository.existsByStudentIdAndLessonId(
+                                studentId, request.getLessonId())) {
 
-    private void updateEnrollmentProgress(Long studentId, Long courseId) {
+                        throw new ResourceAlreadyExistsException(
+                                        "Lesson already completed.");
+                }
 
-        Enrollment enrollment = enrollmentRepository
-                .findByStudentIdAndCourseId(studentId, courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found."));
+                LessonProgress lessonProgress = new LessonProgress();
 
-        long completedLessons = lessonProgressRepository
-                .countByStudentIdAndLessonCourseIdAndCompletedTrue(
-                        studentId, courseId);
+                lessonProgress.setStudent(student);
+                lessonProgress.setLesson(lesson);
+                lessonProgress.setCompleted(true);
+                lessonProgress.setCompletedAt(LocalDateTime.now());
 
-        long totalLessons = lessonRepository.countByCourseId(courseId);
+                LessonProgress savedProgress = lessonProgressRepository.save(lessonProgress);
 
-        double progress = totalLessons == 0
-                ? 0
-                : (completedLessons * 100.0) / totalLessons;
+                updateEnrollmentProgress(studentId, lesson.getCourse().getId());
 
-        enrollment.setProgress(progress);
+                return mapToResponse(savedProgress);
+        }
 
-        enrollmentRepository.save(enrollment);
-    }
+        private void updateEnrollmentProgress(Long studentId, Long courseId) {
 
-    @Override
-    public List<ProgressResponse> getStudentProgress(Long studentId) {
+                Enrollment enrollment = enrollmentRepository
+                                .findByStudentIdAndCourseId(studentId, courseId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found."));
 
-        return lessonProgressRepository.findByStudentId(studentId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                long completedLessons = lessonProgressRepository
+                                .countByStudentIdAndLessonCourseIdAndCompletedTrue(
+                                                studentId, courseId);
 
-    private ProgressResponse mapToResponse(LessonProgress progress) {
+                long totalLessons = lessonRepository.countByCourseId(courseId);
 
-        ProgressResponse response = new ProgressResponse();
+                double progress = totalLessons == 0
+                                ? 0
+                                : (completedLessons * 100.0) / totalLessons;
 
-        response.setId(progress.getId());
-        response.setStudentId(progress.getStudent().getId());
-        response.setLessonId(progress.getLesson().getId());
-        response.setCompleted(progress.getCompleted());
-        response.setCompletedAt(progress.getCompletedAt());
+                enrollment.setProgress(progress);
 
-        return response;
-    }
+                enrollmentRepository.save(enrollment);
+        }
+
+        @Override
+        public List<ProgressResponse> getStudentProgress() {
+
+                User student = getCurrentUser();
+
+                Long studentId = student.getId();
+                return lessonProgressRepository.findByStudentId(studentId)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
+        private ProgressResponse mapToResponse(LessonProgress progress) {
+
+                ProgressResponse response = new ProgressResponse();
+
+                response.setId(progress.getId());
+                response.setStudentId(progress.getStudent().getId());
+                response.setLessonId(progress.getLesson().getId());
+                response.setCompleted(progress.getCompleted());
+                response.setCompletedAt(progress.getCompletedAt());
+
+                return response;
+        }
+
+        private User getCurrentUser() {
+
+                String email = SecurityUtils.getCurrentUserEmail();
+
+                return userRepository
+                                .findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+        }
 }

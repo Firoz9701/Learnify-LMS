@@ -38,31 +38,34 @@ function AppRoutes() {
             <Route
                 path="/student/my-courses"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_STUDENT", "ROLE_ADMIN"]}>
                         <MyCourses />
                     </ProtectedRoute>
                 }
             />
+
             <Route
                 path="/student/course/:courseId/lessons"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_STUDENT", "ROLE_ADMIN"]}>
                         <Lessons />
                     </ProtectedRoute>
                 }
             />
+
             <Route
                 path="/student/lesson/:lessonId"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_STUDENT", "ROLE_ADMIN"]}>
                         <LessonDetails />
                     </ProtectedRoute>
                 }
             />
+
             <Route
                 path="/student"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_STUDENT", "ROLE_ADMIN"]}>
                         <StudentDashboard />
                     </ProtectedRoute>
                 }
@@ -70,15 +73,16 @@ function AppRoutes() {
             <Route
                 path="/instructor"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_INSTRUCTOR", "ROLE_ADMIN"]}>
                         <InstructorDashboard />
                     </ProtectedRoute>
                 }
             />
+
             <Route
                 path="/instructor/courses"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_INSTRUCTOR", "ROLE_ADMIN"]}>
                         <ManageCourses />
                     </ProtectedRoute>
                 }
@@ -87,7 +91,7 @@ function AppRoutes() {
             <Route
                 path="/instructor/lessons"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_INSTRUCTOR", "ROLE_ADMIN"]}>
                         <ManageLessons />
                     </ProtectedRoute>
                 }
@@ -95,7 +99,7 @@ function AppRoutes() {
             <Route
                 path="/admin"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
                         <AdminDashboard />
                     </ProtectedRoute>
                 }

@@ -21,7 +21,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -77,8 +80,12 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
                                                                 "/api/auth/**",
-                                                                "/api/courses/**",
                                                                 "/api/test")
+                                                .permitAll()
+
+                                                .requestMatchers(
+                                                                org.springframework.http.HttpMethod.GET,
+                                                                "/api/courses/**")
                                                 .permitAll()
 
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -88,7 +95,7 @@ public class SecurityConfig {
                                 .addFilterBefore(
                                                 jwtAuthenticationFilter,
                                                 UsernamePasswordAuthenticationFilter.class)
-                                                
+
                                 .httpBasic(Customizer.withDefaults());
 
                 return http.build();

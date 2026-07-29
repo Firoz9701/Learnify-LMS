@@ -39,6 +39,57 @@ function MyCourses() {
 
     };
 
+    const downloadCertificate = async (courseId) => {
+
+        try {
+
+            const user =
+                JSON.parse(localStorage.getItem("user"));
+
+            const response =
+                await api.get(
+                    `/certificates/student/${user.id}/course/${courseId}`,
+                    {
+                        responseType: "blob"
+                    }
+                );
+
+            const url =
+                window.URL.createObjectURL(
+                    new Blob([response.data])
+                );
+
+            const link =
+                document.createElement("a");
+
+            link.href = url;
+
+            link.download =
+                "Learnify-Certificate.pdf";
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            link.remove();
+
+            window.URL.revokeObjectURL(url);
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.response?.data?.message ||
+                "Unable to download certificate."
+            );
+
+        }
+
+    };
+
     if (loading) {
 
         return (
@@ -136,6 +187,21 @@ function MyCourses() {
                                     >
                                         Continue Learning
                                     </Link>
+
+                                    {course.progress >= 100 && (
+
+                                        <button
+                                            className="btn btn-success w-100 mt-2"
+                                            onClick={() =>
+                                                downloadCertificate(course.courseId)
+                                            }
+                                        >
+
+                                            Download Certificate
+
+                                        </button>
+
+                                    )}
 
                                 </div>
 

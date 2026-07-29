@@ -7,11 +7,14 @@ function Lessons() {
     const { courseId } = useParams();
 
     const [lessons, setLessons] = useState([]);
+    const [completedLessons, setCompletedLessons] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+
         loadLessons();
-    }, []);
+
+    }, [courseId]);
 
     const loadLessons = async () => {
 
@@ -21,6 +24,13 @@ function Lessons() {
                 await api.get(`/lessons/course/${courseId}`);
 
             setLessons(response.data);
+
+            const progressResponse =
+                await api.get("/progress");
+
+            setCompletedLessons(
+                progressResponse.data.map(progress => progress.lessonId)
+            );
 
         } catch (error) {
 
@@ -62,39 +72,61 @@ function Lessons() {
 
             <div className="list-group shadow-sm rounded-4">
 
-                {lessons.map((lesson) => (
+                {lessons.map((lesson, index) => {
 
-                    <Link
-                        key={lesson.id}
-                        to={`/student/lesson/${lesson.id}`}
-                        className="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-4"
-                    >
+                    const completed =
+                        completedLessons.includes(lesson.id);
 
-                        <div>
+                    const unlocked =
+                        index === 0 ||
+                        completedLessons.includes(lessons[index - 1].id);
 
-                            <h5 className="mb-1">
+                    return (
 
-                                Lesson {lesson.lessonOrder}
+                        <Link
+                            key={lesson.id}
+                            to={unlocked ? `/student/lesson/${lesson.id}` : "#"}
+                            onClick={(e) => {
+                                if (!unlocked) {
+                                    e.preventDefault();
+                                    alert("Complete the previous lesson first.");
+                                }
+                            }}
+                            className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center py-4 ${!unlocked ? "disabled" : ""}`}
+                        >
 
-                            </h5>
+                            <div>
 
-                            <p className="mb-0 text-muted">
+                                <h5 className="mb-1">
+                                    Lesson {lesson.lessonOrder}
+                                </h5>
 
-                                {lesson.title}
+                                <p className="mb-0 text-muted">
+                                    {lesson.title}
+                                </p>
 
-                            </p>
+                            </div>
 
-                        </div>
+                            <span
+                                className={`btn ${completed
+                                    ? "btn-success"
+                                    : unlocked
+                                        ? "btn-outline-primary"
+                                        : "btn-secondary"
+                                    }`}
+                            >
+                                {completed
+                                    ? "Completed ✓"
+                                    : unlocked
+                                        ? "Watch →"
+                                        : "Locked 🔒"}
+                            </span>
 
-                        <span className="btn btn-outline-primary">
+                        </Link>
 
-                            Watch →
+                    );
 
-                        </span>
-
-                    </Link>
-
-                ))}
+                })}
 
             </div>
 

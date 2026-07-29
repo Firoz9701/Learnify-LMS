@@ -6,6 +6,7 @@ import com.learnify.backend.service.ProgressService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,22 +21,22 @@ public class ProgressController {
         this.progressService = progressService;
     }
 
-    @PostMapping("/student/{studentId}")
+    @PreAuthorize("hasAnyRole('STUDENT','ADMIN')")
+    @PostMapping
     public ResponseEntity<ProgressResponse> completeLesson(
-            @PathVariable Long studentId,
             @Valid @RequestBody ProgressRequest request) {
 
-        ProgressResponse response =
-                progressService.completeLesson(studentId, request);
+        ProgressResponse response = progressService.completeLesson(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<ProgressResponse>> getStudentProgress(
-            @PathVariable Long studentId) {
+    @PreAuthorize("hasAnyRole('STUDENT','ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<ProgressResponse>> getStudentProgress() {
 
         return ResponseEntity.ok(
-                progressService.getStudentProgress(studentId));
+                progressService.getStudentProgress());
+
     }
 }

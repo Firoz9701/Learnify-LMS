@@ -15,6 +15,8 @@ function ManageCourses() {
 
     const [editingCourse, setEditingCourse] = useState(null);
 
+    const publishedCourses = courses.filter((course) => course.published).length;
+
     useEffect(() => {
 
         loadCourses();
@@ -89,78 +91,136 @@ function ManageCourses() {
 
     return (
 
-        <div className="container mt-4">
+        <div className="container py-5 instructor-page">
+
+            <div className="hero-card instructor-hero mb-4">
+                <h2 className="fw-bold mb-2">Course Manager</h2>
+                <p className="text-muted mb-0">
+                    Create new courses and maintain your catalog with clear publishing control.
+                </p>
+            </div>
+
+            <div className="row g-4 mb-4">
+                <div className="col-md-6 col-lg-4">
+                    <div className="card stats-panel border-0 h-100 instructor-stat-card">
+                        <div className="card-body">
+                            <small className="text-muted d-block mb-2">Total Courses</small>
+                            <h3 className="fw-bold mb-0">{courses.length}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-md-6 col-lg-4">
+                    <div className="card stats-panel border-0 h-100 instructor-stat-card">
+                        <div className="card-body">
+                            <small className="text-muted d-block mb-2">Published</small>
+                            <h3 className="fw-bold mb-0">{publishedCourses}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-md-12 col-lg-4">
+                    <div className="card border-0 h-100 instructor-note-card">
+                        <div className="card-body">
+                            <small className="text-muted d-block mb-2">Tip</small>
+                            <p className="mb-0 text-muted">
+                                Use edit mode to quickly revise title, price, thumbnail, and publish status.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <CourseForm
                 onSubmit={handleSubmit}
                 editingCourse={editingCourse}
             />
 
-            <div className="card shadow">
+            <div className="card shadow-sm border-0 instructor-panel">
 
-                <div className="card-header">
+                <div className="card-body p-4">
 
-                    <h4>All Courses</h4>
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                        <div>
+                            <h4 className="fw-bold mb-1">All Courses</h4>
+                            <p className="text-muted mb-0">Review and maintain existing course records.</p>
+                        </div>
+                    </div>
 
-                </div>
+                    {courses.length === 0 ? (
+                        <div className="border rounded-4 p-4 text-center bg-light-subtle">
+                            <h6 className="fw-semibold mb-2">No courses found</h6>
+                            <p className="text-muted mb-0">Create your first course using the form above.</p>
+                        </div>
+                    ) : (
+                        <div className="table-responsive">
+                            <table className="table align-middle admin-table">
 
-                <div className="card-body">
+                                <thead>
 
-                    <table className="table table-bordered">
+                                <tr>
 
-                        <thead>
+                                    <th>ID</th>
 
-                        <tr>
+                                    <th>Title</th>
 
-                            <th>ID</th>
+                                    <th>Price</th>
 
-                            <th>Title</th>
+                                    <th>Status</th>
 
-                            <th>Price</th>
+                                    <th width="240">Actions</th>
 
-                            <th width="220">Actions</th>
+                                </tr>
 
-                        </tr>
+                                </thead>
 
-                        </thead>
+                                <tbody>
 
-                        <tbody>
+                                {courses.map(course => (
 
-                        {courses.map(course => (
+                                    <tr key={course.id}>
 
-                            <tr key={course.id}>
+                                        <td>{course.id}</td>
 
-                                <td>{course.id}</td>
+                                        <td className="fw-semibold">{course.title}</td>
 
-                                <td>{course.title}</td>
+                                        <td>Rs. {course.price}</td>
 
-                                <td>₹ {course.price}</td>
+                                        <td>
+                                            <span className={`badge ${course.published ? "text-bg-success" : "text-bg-secondary"}`}>
+                                                {course.published ? "Published" : "Draft"}
+                                            </span>
+                                        </td>
 
-                                <td>
+                                        <td>
 
-                                    <button
-                                        className="btn btn-warning btn-sm me-2"
-                                        onClick={() => setEditingCourse(course)}
-                                    >
-                                        Edit
-                                    </button>
+                                            <div className="d-flex flex-wrap gap-2">
+                                                <button
+                                                    className="btn btn-outline-primary btn-sm"
+                                                    onClick={() => setEditingCourse(course)}
+                                                >
+                                                    Edit
+                                                </button>
 
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => handleDelete(course.id)}
-                                    >
-                                        Delete
-                                    </button>
+                                                <button
+                                                    className="btn btn-outline-danger btn-sm"
+                                                    onClick={() => handleDelete(course.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
 
-                                </td>
+                                        </td>
 
-                            </tr>
+                                    </tr>
 
-                        ))}
+                                ))}
 
-                        </tbody>
+                                </tbody>
 
-                    </table>
+                            </table>
+                        </div>
+                    )}
 
                 </div>
 

@@ -14,8 +14,6 @@ function LessonDetails() {
 
     const navigate = useNavigate();
 
-    const user = JSON.parse(localStorage.getItem("user"));
-
     async function loadLesson() {
 
         try {
@@ -52,21 +50,19 @@ function LessonDetails() {
         try {
 
             await api.post(
-
-                `/progress/student/${user.id}`,
-
+                "/progress",
                 {
-
                     lessonId: Number(lessonId)
-
                 }
-
             );
 
             setCompleted(true);
 
             alert("Lesson completed successfully!");
 
+            navigate(
+                `/student/course/${lesson.courseId}/lessons`
+            );
         }
 
         catch (error) {
