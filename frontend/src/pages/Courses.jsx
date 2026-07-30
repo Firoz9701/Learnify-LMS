@@ -5,21 +5,81 @@ import { Link } from "react-router-dom";
 function Courses() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [query, setQuery] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [category, setCategory] = useState("all");
+    const [published, setPublished] = useState("true");
+    const [price, setPrice] = useState("all");
+    const [sortBy, setSortBy] = useState("latest");
+
+    const fetchCourses = async (nextFilters) => {
+        setLoading(true);
+
+        try {
+            const data = await getAllCourses(0, 12, nextFilters.sortBy, {
+                search: nextFilters.searchTerm,
+                category: nextFilters.category,
+                published: nextFilters.published,
+                price: nextFilters.price
+            });
+
+            setCourses(data || []);
+        } catch (error) {
+            console.error(error);
+            setCourses([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const data = await getAllCourses(0, 12);
-                setCourses(data);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
+        fetchCourses({ searchTerm, category, published, price, sortBy });
+    }, []);
+
+    const handleSearch = (event) => {
+        event.preventDefault();
+        setSearchTerm(query.trim());
+
+        fetchCourses({
+            searchTerm: query.trim(),
+            category,
+            published,
+            price,
+            sortBy
+        });
+    };
+
+    const handleApplyFilters = () => {
+        fetchCourses({ searchTerm, category, published, price, sortBy });
+    };
+
+    const handleReset = () => {
+        const defaults = {
+            searchTerm: "",
+            category: "all",
+            published: "true",
+            price: "all",
+            sortBy: "latest"
         };
 
-        fetchCourses();
-    }, []);
+        setQuery("");
+        setSearchTerm(defaults.searchTerm);
+        setCategory(defaults.category);
+        setPublished(defaults.published);
+        setPrice(defaults.price);
+        setSortBy(defaults.sortBy);
+
+        fetchCourses(defaults);
+    };
+
+    const categoryOptions = Array.from(
+        new Set(
+            courses
+                .map((course) => course.category)
+                .filter((value) => typeof value === "string" && value.trim().length > 0)
+                .map((value) => value.trim())
+        )
+    );
 
     return (
         <div className="container py-5">
@@ -34,10 +94,103 @@ function Courses() {
                 </Link>
             </div>
 
+            <div className="card border-0 shadow-sm mb-4">
+                <div className="card-body p-4">
+                    <form onSubmit={handleSearch} className="row g-3 align-items-end mb-3">
+                        <div className="col-md-8">
+                            <label className="form-label text-muted small mb-1">Search by title or category</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder="Try: React, Java, Docker..."
+                            />
+                        </div>
+                        <div className="col-md-4 d-grid">
+                            <button type="submit" className="btn btn-primary">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="row g-3">
+                        <div className="col-md-3">
+                            <label className="form-label text-muted small mb-1">Category</label>
+                            <select
+                                className="form-select"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                            >
+                                <option value="all">All categories</option>
+                                {categoryOptions.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="col-md-3">
+                            <label className="form-label text-muted small mb-1">Published</label>
+                            <select
+                                className="form-select"
+                                value={published}
+                                onChange={(e) => setPublished(e.target.value)}
+                            >
+                                <option value="all">All</option>
+                                <option value="true">Published</option>
+                                <option value="false">Unpublished</option>
+                            </select>
+                        </div>
+
+                        <div className="col-md-3">
+                            <label className="form-label text-muted small mb-1">Price</label>
+                            <select
+                                className="form-select"
+                                value={price}
+                                onChange={(e) => setPrice(e.target.value)}
+                            >
+                                <option value="all">All prices</option>
+                                <option value="free">Free</option>
+                                <option value="paid">Paid</option>
+                                <option value="under-1000">Under ₹1000</option>
+                                <option value="1000-3000">₹1000 - ₹3000</option>
+                                <option value="above-3000">Above ₹3000</option>
+                            </select>
+                        </div>
+
+                        <div className="col-md-3">
+                            <label className="form-label text-muted small mb-1">Sort</label>
+                            <select
+                                className="form-select"
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <option value="latest">Latest</option>
+                                <option value="popular">Popular</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="d-flex gap-2 mt-3">
+                        <button type="button" className="btn btn-outline-primary" onClick={handleApplyFilters}>
+                            Apply Filters
+                        </button>
+                        <button type="button" className="btn btn-outline-secondary" onClick={handleReset}>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {loading ? (
-                <p className="text-muted">Loading courses...</p>
+                <div className="border rounded-4 p-4 bg-light-subtle text-muted">Loading courses...</div>
             ) : courses.length === 0 ? (
-                <p className="text-muted">No courses available yet.</p>
+                <div className="border rounded-4 p-4 bg-light-subtle">
+                    <h6 className="fw-semibold mb-1">No matching courses found</h6>
+                    <p className="text-muted mb-0">Try changing search text, category, price filter, or sort option.</p>
+                </div>
             ) : (
                 <div className="row g-4">
                     {courses.map((course) => (

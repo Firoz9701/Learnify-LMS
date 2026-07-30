@@ -5,7 +5,7 @@ export const login = (credentials) => {
 };
 
 export const register = (userData) => {
-    return api.post("/auth/register", userData);
+    return api.post("/auth/signup", userData);
 };
 
 export const requestPasswordReset = (email) => {
@@ -20,4 +20,12 @@ export const checkPasswordResetStatus = (email) => {
 
 export const changeTemporaryPassword = (newPassword) => {
     return api.post("/auth/change-temporary-password", { newPassword });
+};
+
+export const getCurrentUserProfile = () => {
+    return api.get("/auth/me");
+};
+
+export const updateCurrentUserProfile = (profileData) => {
+    return api.put("/auth/me", profileData);
 };

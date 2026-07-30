@@ -4,6 +4,7 @@ import com.learnify.backend.dto.auth.ChangePasswordRequest;
 import com.learnify.backend.dto.auth.LoginRequest;
 import com.learnify.backend.dto.auth.LoginResponse;
 import com.learnify.backend.dto.auth.ForgotPasswordRequestDto;
+import com.learnify.backend.dto.auth.ProfileUpdateRequest;
 import com.learnify.backend.dto.auth.SignupRequest;
 import com.learnify.backend.dto.auth.UserResponse;
 import com.learnify.backend.entity.auth.PasswordResetRequest;
@@ -129,5 +130,19 @@ public class AuthController {
         String message = authService.changeTemporaryPassword(authentication.getName(), request);
 
         return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
+
+        return ResponseEntity.ok(authService.getCurrentUserProfile(authentication.getName()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserResponse> updateCurrentUser(
+            @Valid @RequestBody ProfileUpdateRequest request,
+            Authentication authentication) {
+
+        return ResponseEntity.ok(authService.updateCurrentUserProfile(authentication.getName(), request));
     }
 }

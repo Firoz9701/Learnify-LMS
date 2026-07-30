@@ -39,10 +39,14 @@ public class CourseController {
 
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "id") String sortBy) {
+            @RequestParam(defaultValue = "latest") String sortBy,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String published,
+            @RequestParam(required = false) String price) {
 
         return ResponseEntity.ok(
-                courseService.getAllCourses(page, size, sortBy));
+                courseService.getAllCourses(page, size, sortBy, search, category, published, price));
     }
 
     @GetMapping("/my")

@@ -3,6 +3,7 @@ package com.learnify.backend.service.impl;
 import com.learnify.backend.dto.auth.LoginRequest;
 import com.learnify.backend.dto.auth.LoginResponse;
 import com.learnify.backend.dto.auth.ChangePasswordRequest;
+import com.learnify.backend.dto.auth.ProfileUpdateRequest;
 import com.learnify.backend.dto.auth.SignupRequest;
 import com.learnify.backend.dto.auth.UserResponse;
 import com.learnify.backend.enums.RoleName;
@@ -24,6 +25,14 @@ import com.learnify.backend.service.jwt.JwtService;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final java.util.Set<String> COMMON_WEAK_PASSWORDS = java.util.Set.of(
+            "password",
+            "password123",
+            "12345678",
+            "qwerty123",
+            "admin123",
+            "letmein123");
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -43,7 +52,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse register(SignupRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+        String firstName = request.getFirstName().trim();
+        String lastName = request.getLastName().trim();
+        String phoneNumber = request.getPhoneNumber() == null ? null : request.getPhoneNumber().trim();
+
+        if (COMMON_WEAK_PASSWORDS.contains(request.getPassword().toLowerCase())) {
+            throw new IllegalArgumentException("Choose a stronger password. This password is too common.");
+        }
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new ResourceAlreadyExistsException("Email is already registered.");
         }
 
@@ -52,13 +70,13 @@ public class AuthServiceImpl implements AuthService {
 
         User user = new User();
 
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(normalizedEmail);
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        user.setPhoneNumber(request.getPhoneNumber());
+        user.setPhoneNumber(phoneNumber == null || phoneNumber.isBlank() ? null : phoneNumber);
 
         user.setEnabled(true);
 
@@ -131,5 +149,46 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         return "Password changed successfully.";
+    }
+
+    @Override
+    public UserResponse getCurrentUserProfile(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+
+        return toUserResponse(user);
+    }
+
+    @Override
+    public UserResponse updateCurrentUserProfile(String email, ProfileUpdateRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+
+        user.setFirstName(request.getFirstName().trim());
+        user.setLastName(request.getLastName().trim());
+        user.setPhoneNumber(request.getPhoneNumber() == null ? null : request.getPhoneNumber().trim());
+
+        User savedUser = userRepository.save(user);
+
+        return toUserResponse(savedUser);
+    }
+
+    private UserResponse toUserResponse(User user) {
+
+        UserResponse userResponse = new UserResponse();
+
+        userResponse.setId(user.getId());
+        userResponse.setFirstName(user.getFirstName());
+        userResponse.setLastName(user.getLastName());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setPhoneNumber(user.getPhoneNumber());
+        userResponse.setProfileImage(user.getProfileImage());
+        userResponse.setRole(user.getRole().getName().name());
+        userResponse.setEnabled(user.getEnabled());
+        userResponse.setForcePasswordChange(user.getForcePasswordChange());
+
+        return userResponse;
     }
 }

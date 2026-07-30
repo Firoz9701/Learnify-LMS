@@ -3,9 +3,11 @@ package com.learnify.backend.service.impl;
 import com.learnify.backend.entity.auth.User;
 import com.learnify.backend.entity.course.Course;
 import com.learnify.backend.entity.enrollment.Enrollment;
+import com.learnify.backend.entity.QuizAttempt;
 import com.learnify.backend.exception.ResourceNotFoundException;
 import com.learnify.backend.repository.CourseRepository;
 import com.learnify.backend.repository.EnrollmentRepository;
+import com.learnify.backend.repository.QuizAttemptRepository;
 import com.learnify.backend.repository.UserRepository;
 import com.learnify.backend.service.CertificateService;
 
@@ -24,15 +26,18 @@ public class CertificateServiceImpl implements CertificateService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+        private final QuizAttemptRepository quizAttemptRepository;
 
     public CertificateServiceImpl(
             UserRepository userRepository,
             CourseRepository courseRepository,
-            EnrollmentRepository enrollmentRepository) {
+                        EnrollmentRepository enrollmentRepository,
+                        QuizAttemptRepository quizAttemptRepository) {
 
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
+                this.quizAttemptRepository = quizAttemptRepository;
     }
 
     @Override
@@ -51,6 +56,16 @@ public class CertificateServiceImpl implements CertificateService {
         if (enrollment.getProgress() < 100) {
             throw new IllegalStateException(
                     "Complete the course before downloading the certificate.");
+        }
+
+        QuizAttempt latestAttempt = quizAttemptRepository
+                .findTopByUserAndCourseIdOrderByAttemptedAtDesc(student, courseId)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Pass the quiz before downloading the certificate."));
+
+        if (latestAttempt.getScore() == null || latestAttempt.getScore() < 60) {
+            throw new IllegalStateException(
+                    "Pass the quiz before downloading the certificate.");
         }
 
         try {

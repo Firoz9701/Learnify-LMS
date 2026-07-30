@@ -14,7 +14,11 @@ public interface CourseService {
     Page<CourseResponse> getAllCourses(
         int page,
         int size,
-        String sortBy);
+        String sortBy,
+        String search,
+        String category,
+        String published,
+        String price);
 
     List<CourseResponse> getMyCourses();
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { getMyEnrollments } from "../../services/enrollmentService";
 import { getCourseImage } from "../../services/courseService";
+import { getMyAttempts } from "../../services/quizService";
 import { Link } from "react-router-dom";
 
 function MyCourses() {
@@ -9,6 +10,7 @@ function MyCourses() {
     const [courses, setCourses] = useState([]);
     const [activeCourses, setActiveCourses] = useState([]);
     const [completedCourses, setCompletedCourses] = useState([]);
+    const [quizAttempts, setQuizAttempts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -21,9 +23,16 @@ function MyCourses() {
 
         try {
 
-            const data = await getMyEnrollments();
+            const [enrollmentResponse, attemptsResponse] = await Promise.all([
+                getMyEnrollments(),
+                getMyAttempts()
+            ]);
+
+            const data = enrollmentResponse || [];
+            const attempts = attemptsResponse.data || [];
 
             setCourses(data);
+            setQuizAttempts(attempts);
 
             const done = data.filter(
                 (course) => Number(course.progress || 0) >= 100
@@ -100,6 +109,14 @@ function MyCourses() {
 
         }
 
+    };
+
+    const hasPassedQuiz = (courseId) => {
+        const latestAttempt = quizAttempts
+            .filter((attempt) => String(attempt.courseId) === String(courseId))
+            .sort((a, b) => new Date(b.attemptedAt) - new Date(a.attemptedAt))[0];
+
+        return Number(latestAttempt?.score || 0) >= 60;
     };
 
     if (loading) {
@@ -305,14 +322,20 @@ function MyCourses() {
                                                     View Lessons
                                                 </Link>
 
-                                                <button
-                                                    className="btn btn-success"
-                                                    onClick={() =>
-                                                        downloadCertificate(course.courseId)
-                                                    }
-                                                >
-                                                    Download Certificate
-                                                </button>
+                                                {hasPassedQuiz(course.courseId) ? (
+                                                    <button
+                                                        className="btn btn-success"
+                                                        onClick={() =>
+                                                            downloadCertificate(course.courseId)
+                                                        }
+                                                    >
+                                                        Download Certificate
+                                                    </button>
+                                                ) : (
+                                                    <button className="btn btn-secondary" type="button" disabled>
+                                                        Pass Quiz to Unlock Certificate
+                                                    </button>
+                                                )}
                                             </div>
 
                                         </div>

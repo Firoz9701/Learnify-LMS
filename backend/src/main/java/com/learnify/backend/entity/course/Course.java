@@ -29,6 +29,9 @@ public class Course extends BaseEntity {
     @Column(nullable = false, length = 2000)
     private String description;
 
+    @Column(length = 100)
+    private String category;
+
     private String thumbnail;
 
     @Column(length = 500)

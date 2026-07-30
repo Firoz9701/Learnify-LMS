@@ -21,6 +21,9 @@ public class CourseRequest {
     @Size(max = 2000)
     private String description;
 
+    @Size(max = 100)
+    private String category;
+
     private String thumbnail;
 
     private String videoUrl;

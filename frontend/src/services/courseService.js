@@ -1,8 +1,23 @@
 import api from "./api";
 
-export const getAllCourses = async (page = 0, size = 12, sortBy = "id") => {
+export const getAllCourses = async (
+    page = 0,
+    size = 12,
+    sortBy = "latest",
+    filters = {}
+) => {
+    const params = {
+        page,
+        size,
+        sortBy,
+        ...(filters.search ? { search: filters.search } : {}),
+        ...(filters.category ? { category: filters.category } : {}),
+        ...(filters.published ? { published: filters.published } : {}),
+        ...(filters.price ? { price: filters.price } : {})
+    };
+
     const response = await api.get("/courses", {
-        params: { page, size, sortBy }
+        params
     });
 
     return response.data.content;

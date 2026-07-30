@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
+import {
+    getCurrentUserProfile,
+    updateCurrentUserProfile
+} from "../../services/authService";
 
 function StudentDashboard() {
     const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
@@ -19,15 +23,40 @@ function StudentDashboard() {
         email: "",
         phoneNumber: ""
     });
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [profileError, setProfileError] = useState("");
+    const [profileSuccess, setProfileSuccess] = useState("");
 
     useEffect(() => {
-        setProfileForm({
-            firstName: user?.firstName || "",
-            lastName: user?.lastName || "",
-            email: user?.email || "",
-            phoneNumber: user?.phoneNumber || ""
-        });
-    }, [user]);
+        const loadProfile = async () => {
+            try {
+                const response = await getCurrentUserProfile();
+                const profile = response.data;
+
+                setUser(profile);
+                localStorage.setItem("user", JSON.stringify(profile));
+                setProfileForm({
+                    firstName: profile?.firstName || "",
+                    lastName: profile?.lastName || "",
+                    email: profile?.email || "",
+                    phoneNumber: profile?.phoneNumber || ""
+                });
+            } catch (error) {
+                console.error(error);
+                setProfileForm({
+                    firstName: user?.firstName || "",
+                    lastName: user?.lastName || "",
+                    email: user?.email || "",
+                    phoneNumber: user?.phoneNumber || ""
+                });
+            } finally {
+                setProfileLoading(false);
+            }
+        };
+
+        loadProfile();
+    }, []);
 
     useEffect(() => {
         const loadDashboard = async () => {
@@ -78,21 +107,43 @@ function StudentDashboard() {
         });
     };
 
-    const handleProfileSave = (e) => {
+    const handleProfileSave = async (e) => {
         e.preventDefault();
+        setProfileError("");
+        setProfileSuccess("");
 
-        const updatedUser = {
-            ...user,
-            firstName: profileForm.firstName.trim(),
-            lastName: profileForm.lastName.trim(),
-            email: profileForm.email.trim(),
-            phoneNumber: profileForm.phoneNumber.trim()
-        };
+        if (!profileForm.firstName.trim() || !profileForm.lastName.trim()) {
+            setProfileError("First name and last name are required.");
+            return;
+        }
 
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        setIsEditingProfile(false);
+        setProfileSaving(true);
+
+        try {
+            const response = await updateCurrentUserProfile({
+                firstName: profileForm.firstName.trim(),
+                lastName: profileForm.lastName.trim(),
+                phoneNumber: profileForm.phoneNumber.trim()
+            });
+
+            const updatedUser = response.data;
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            setProfileForm({
+                firstName: updatedUser?.firstName || "",
+                lastName: updatedUser?.lastName || "",
+                email: updatedUser?.email || "",
+                phoneNumber: updatedUser?.phoneNumber || ""
+            });
+            setProfileSuccess("Profile updated successfully.");
+            setIsEditingProfile(false);
+        } catch (error) {
+            setProfileError(error.response?.data?.message || "Unable to save profile.");
+        } finally {
+            setProfileSaving(false);
+        }
     };
+
 
     return (
         <div className="container py-5">
@@ -230,6 +281,13 @@ function StudentDashboard() {
                 </div>
             </div>
 
+            <div className="card shadow-sm border-0 mb-3 dashboard-tools-card">
+                <div className="card-body py-3 px-4">
+                    <h4 className="fw-bold mb-1">⚡ Quick Actions</h4>
+                    <p className="text-muted mb-0">Every card below is clickable for fast navigation.</p>
+                </div>
+            </div>
+
             <div className="card shadow-sm border-0 mb-5" id="profile-section">
                 <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
@@ -249,7 +307,11 @@ function StudentDashboard() {
                         </button>
                     </div>
 
-                    {isEditingProfile ? (
+                    {profileLoading ? (
+                        <div className="border rounded-4 p-4 bg-light-subtle">
+                            <p className="text-muted mb-0">Loading profile...</p>
+                        </div>
+                    ) : isEditingProfile ? (
                         <form onSubmit={handleProfileSave}>
                             <div className="row g-3">
                                 <div className="col-md-6">
@@ -283,9 +345,10 @@ function StudentDashboard() {
                                         className="form-control"
                                         name="email"
                                         value={profileForm.email}
-                                        onChange={handleProfileChange}
-                                        required
+                                        readOnly
+                                        disabled
                                     />
+                                    <small className="text-muted">Email is kept from your account login.</small>
                                 </div>
 
                                 <div className="col-md-6">
@@ -300,8 +363,11 @@ function StudentDashboard() {
                                 </div>
                             </div>
 
-                            <button className="btn btn-primary mt-4" type="submit">
-                                Save Changes
+                            {profileError && <div className="alert alert-danger py-2 mt-3">{profileError}</div>}
+                            {profileSuccess && <div className="alert alert-success py-2 mt-3">{profileSuccess}</div>}
+
+                            <button className="btn btn-primary mt-4" type="submit" disabled={profileSaving}>
+                                {profileSaving ? "Saving..." : "Save Changes"}
                             </button>
                         </form>
                     ) : (
@@ -335,13 +401,6 @@ function StudentDashboard() {
                             </div>
                         </div>
                     )}
-                </div>
-            </div>
-
-            <div className="card shadow-sm border-0 mb-3 dashboard-tools-card">
-                <div className="card-body py-3 px-4">
-                    <h4 className="fw-bold mb-1">⚡ Quick Actions</h4>
-                    <p className="text-muted mb-0">Every card below is clickable for fast navigation.</p>
                 </div>
             </div>
 

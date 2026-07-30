@@ -3,6 +3,7 @@ package com.learnify.backend.service;
 import com.learnify.backend.dto.auth.LoginRequest;
 import com.learnify.backend.dto.auth.LoginResponse;
 import com.learnify.backend.dto.auth.ChangePasswordRequest;
+import com.learnify.backend.dto.auth.ProfileUpdateRequest;
 import com.learnify.backend.dto.auth.SignupRequest;
 import com.learnify.backend.dto.auth.UserResponse;
 
@@ -13,4 +14,8 @@ public interface AuthService {
     LoginResponse login(LoginRequest request);
 
     String changeTemporaryPassword(String email, ChangePasswordRequest request);
+
+    UserResponse getCurrentUserProfile(String email);
+
+    UserResponse updateCurrentUserProfile(String email, ProfileUpdateRequest request);
 }
