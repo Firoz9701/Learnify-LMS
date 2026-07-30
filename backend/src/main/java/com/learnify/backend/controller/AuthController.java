@@ -13,11 +13,13 @@ import com.learnify.backend.repository.UserRepository;
 import com.learnify.backend.service.AuthService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -74,6 +76,50 @@ public class AuthController {
                 "If an account exists for this email, the reset request has been submitted to admin."
         ));
     }
+
+        @GetMapping("/password-reset-status")
+        public ResponseEntity<Map<String, String>> getPasswordResetStatus(
+            @RequestParam @Email(message = "Enter a valid email") String email) {
+
+        Optional<PasswordResetRequest> latestRequestOptional =
+            passwordResetRequestRepository.findTopByUserEmailOrderByCreatedAtDesc(email.trim());
+
+        if (latestRequestOptional.isEmpty()) {
+            return ResponseEntity.ok(Map.of(
+                "status", "NOT_FOUND",
+                "message", "No reset request found yet for this email."
+            ));
+        }
+
+        PasswordResetRequest latestRequest = latestRequestOptional.get();
+
+        if (!latestRequest.isResolved()) {
+            return ResponseEntity.ok(Map.of(
+                "status", "PENDING",
+                "message", "Your request is pending admin review. Please check again shortly."
+            ));
+        }
+
+        if (latestRequest.isTemporaryPasswordViewed()
+            || latestRequest.getTemporaryPasswordPlain() == null
+            || latestRequest.getTemporaryPasswordPlain().isBlank()) {
+            return ResponseEntity.ok(Map.of(
+                "status", "RESOLVED_VIEWED",
+                "message", "Your temporary password was already viewed. Request another reset if needed."
+            ));
+        }
+
+        String temporaryPassword = latestRequest.getTemporaryPasswordPlain();
+
+        latestRequest.setTemporaryPasswordViewed(true);
+        passwordResetRequestRepository.save(latestRequest);
+
+        return ResponseEntity.ok(Map.of(
+            "status", "RESOLVED",
+            "message", "Temporary password is ready.",
+            "temporaryPassword", temporaryPassword
+        ));
+        }
 
     @PostMapping("/change-temporary-password")
     public ResponseEntity<Map<String, String>> changeTemporaryPassword(

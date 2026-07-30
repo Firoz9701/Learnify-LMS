@@ -1,17 +1,83 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { requestPasswordReset } from "../../services/authService";
+import {
+    requestPasswordReset,
+    checkPasswordResetStatus
+} from "../../services/authService";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
+    const [statusMessage, setStatusMessage] = useState("");
+    const [submittedEmail, setSubmittedEmail] = useState("");
     const [loading, setLoading] = useState(false);
+    const [checkingStatus, setCheckingStatus] = useState(false);
+
+    useEffect(() => {
+        if (!submittedEmail) {
+            return;
+        }
+
+        const intervalId = setInterval(async () => {
+            try {
+                const response = await checkPasswordResetStatus(submittedEmail);
+                const status = response.data?.status;
+                const popupPassword = response.data?.temporaryPassword;
+
+                if (status === "RESOLVED" && popupPassword) {
+                    window.alert(
+                        `Your temporary password is: ${popupPassword}\n\nUse it to login, then change your password immediately.`
+                    );
+                    setStatusMessage("Temporary password delivered. Please login and update your password.");
+                    setSubmittedEmail("");
+                }
+            } catch (err) {
+                console.log("Auto-check failed", err);
+            }
+        }, 10000);
+
+        return () => clearInterval(intervalId);
+    }, [submittedEmail]);
+
+    const handleCheckStatus = async () => {
+        setError("");
+        setStatusMessage("");
+
+        if (!submittedEmail) {
+            setError("Submit a reset request first, then check status.");
+            return;
+        }
+
+        setCheckingStatus(true);
+
+        try {
+            const response = await checkPasswordResetStatus(submittedEmail);
+            const status = response.data?.status;
+            const popupPassword = response.data?.temporaryPassword;
+            const apiMessage = response.data?.message || "No update yet.";
+
+            if (status === "RESOLVED" && popupPassword) {
+                window.alert(
+                    `Your temporary password is: ${popupPassword}\n\nUse it to login, then change your password immediately.`
+                );
+                setStatusMessage("Temporary password delivered. Please login and update your password.");
+                setSubmittedEmail("");
+            } else {
+                setStatusMessage(apiMessage);
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Unable to check request status.");
+        } finally {
+            setCheckingStatus(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setMessage("");
+        setStatusMessage("");
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             setError("Please enter a valid email address.");
@@ -21,8 +87,10 @@ function ForgotPassword() {
         setLoading(true);
 
         try {
-            const response = await requestPasswordReset(email.trim());
+            const normalizedEmail = email.trim();
+            const response = await requestPasswordReset(normalizedEmail);
             setMessage(response.data.message);
+            setSubmittedEmail(normalizedEmail);
             setEmail("");
         } catch (err) {
             setError(err.response?.data?.message || "Unable to submit reset request.");
@@ -60,9 +128,19 @@ function ForgotPassword() {
 
                                 {error && <div className="alert alert-danger py-2">{error}</div>}
                                 {message && <div className="alert alert-success py-2">{message}</div>}
+                                {statusMessage && <div className="alert alert-info py-2">{statusMessage}</div>}
 
                                 <button className="btn btn-primary w-100 rounded-pill btn-lg mt-2" type="submit" disabled={loading}>
                                     {loading ? "Submitting..." : "Submit Request"}
+                                </button>
+
+                                <button
+                                    className="btn btn-outline-primary w-100 rounded-pill btn-lg mt-2"
+                                    type="button"
+                                    onClick={handleCheckStatus}
+                                    disabled={!submittedEmail || checkingStatus}
+                                >
+                                    {checkingStatus ? "Checking..." : "Check Request Status"}
                                 </button>
                             </form>
 

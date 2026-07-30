@@ -11,4 +11,6 @@ public interface PasswordResetRequestRepository extends JpaRepository<PasswordRe
     List<PasswordResetRequest> findByResolvedFalseOrderByCreatedAtDesc();
 
     boolean existsByUserAndResolvedFalse(User user);
+
+    java.util.Optional<PasswordResetRequest> findTopByUserEmailOrderByCreatedAtDesc(String email);
 }

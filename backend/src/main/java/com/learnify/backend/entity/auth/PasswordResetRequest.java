@@ -24,4 +24,10 @@ public class PasswordResetRequest extends BaseEntity {
 
     @Column(nullable = false)
     private boolean resolved = false;
+
+    @Column(name = "temporary_password_plain", length = 100)
+    private String temporaryPasswordPlain;
+
+    @Column(name = "temporary_password_viewed", nullable = false)
+    private boolean temporaryPasswordViewed = false;
 }

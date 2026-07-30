@@ -176,6 +176,8 @@ public class AdminController {
         userRepository.save(user);
 
         resetRequest.setResolved(true);
+        resetRequest.setTemporaryPasswordPlain(request.getTemporaryPassword());
+        resetRequest.setTemporaryPasswordViewed(false);
         PasswordResetRequest savedRequest = passwordResetRequestRepository.save(resetRequest);
 
         return ResponseEntity.ok(toPasswordResetResponse(savedRequest));
