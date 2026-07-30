@@ -18,6 +18,8 @@ import com.learnify.backend.repository.LessonRepository;
 import com.learnify.backend.repository.LessonProgressRepository;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -45,17 +47,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         @Override
         @Transactional
-        public EnrollmentResponse enrollStudent(Long studentId,
-                        EnrollmentRequest request) {
+        public EnrollmentResponse enroll(Long courseId) {
 
-                User student = userRepository.findById(studentId)
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+                String email = authentication.getName();
+
+                User student = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new ResourceNotFoundException("Student not found."));
 
-                Course course = courseRepository.findById(request.getCourseId())
+                Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Course not found."));
 
                 if (enrollmentRepository.existsByStudentIdAndCourseId(
-                                studentId, request.getCourseId())) {
+                                student.getId(), courseId)) {
 
                         throw new ResourceAlreadyExistsException(
                                         "Student is already enrolled in this course.");
@@ -73,18 +78,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         @Override
         @Transactional(readOnly = true)
-        public List<EnrollmentResponse> getStudentEnrollments(Long studentId) {
+        public List<EnrollmentResponse> getMyEnrollments() {
 
-                return enrollmentRepository.findByStudentId(studentId)
-                                .stream()
-                                .map(this::mapToResponse)
-                                .toList();
-        }
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        @Override
-        @Transactional(readOnly = true)
-        public List<EnrollmentResponse> getCourseEnrollments(Long courseId) {
-                return enrollmentRepository.findByCourseId(courseId)
+                String email = authentication.getName();
+
+                User student = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("Student not found."));
+
+                return enrollmentRepository.findByStudentId(student.getId())
                                 .stream()
                                 .map(this::mapToResponse)
                                 .toList();

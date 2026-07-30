@@ -9,10 +9,10 @@ export const getStudentDashboard = async (studentId) => {
     return response.data;
 };
 
-export const getMyCourses = async (studentId) => {
+export const getMyCourses = async () => {
 
     const response = await api.get(
-        `/enrollments/student/${studentId}`
+        "/enrollments/my-courses"
     );
 
     return response.data;

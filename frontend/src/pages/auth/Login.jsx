@@ -43,10 +43,26 @@ function Login() {
             return;
         }
 
+        if (!formData.role) {
+            setError("Please select a role.");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const response = await login(formData);
+            const response = await login({
+                email: formData.email.trim(),
+                password: formData.password
+            });
+
+            const loggedInRole = response?.data?.user?.role;
+
+            if (!loggedInRole || loggedInRole !== formData.role) {
+                setError("Selected role does not match this account. Please choose the correct role.");
+                return;
+            }
+
             loginUser(response.data.user, response.data.token);
 
             if (response?.data?.user?.forcePasswordChange) {
@@ -54,7 +70,7 @@ function Login() {
                 return;
             }
 
-            const role = response?.data?.user?.role || formData.role;
+            const role = response?.data?.user?.role;
             if (role === "ROLE_ADMIN") navigate("/admin");
             else if (role === "ROLE_INSTRUCTOR") navigate("/instructor");
             else navigate("/student");
@@ -139,7 +155,7 @@ function Login() {
                                 {error && <div className="alert alert-danger py-2">{error}</div>}
 
                                 <div className="alert alert-light border py-2 mb-3">
-                                    <small className="text-muted">Tip: choose the role that matches the account you want to access, and you will be taken to the right dashboard after login.</small>
+                                    <small className="text-muted">Tip: email, password, and selected role must all match the same account to sign in.</small>
                                 </div>
 
                                 <button className="btn btn-primary w-100 rounded-pill btn-lg mt-2" type="submit" disabled={loading}>

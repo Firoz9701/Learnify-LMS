@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getCourseById, getCourseImage } from "../services/courseService";
-import Quiz from "../components/course/Quiz";
-import { enrollStudent, getStudentEnrollments } from "../services/enrollmentService";
+import { enroll, getMyEnrollments } from "../services/enrollmentService";
 
 function CourseDetails() {
 
@@ -11,6 +10,27 @@ function CourseDetails() {
     const [course, setCourse] = useState(null);
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [checkingEnrollment, setCheckingEnrollment] = useState(true);
+
+    const refreshEnrollmentStatus = useCallback(async () => {
+
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        if (!user || user.role !== "ROLE_STUDENT") {
+            setIsEnrolled(false);
+            return;
+        }
+
+        try {
+            const enrollments = await getMyEnrollments();
+            const enrolled = enrollments.some(
+                (item) => String(item.courseId) === String(id)
+            );
+            setIsEnrolled(enrolled);
+        } catch (error) {
+            console.log(error);
+            setIsEnrolled(false);
+        }
+    }, [id]);
 
     useEffect(() => {
 
@@ -25,9 +45,7 @@ function CourseDetails() {
                 setCourse(data);
 
                 if (user && user.role === "ROLE_STUDENT") {
-                    const enrollments = await getStudentEnrollments(user.id);
-                    const enrolled = enrollments.some((item) => String(item.courseId) === String(id));
-                    setIsEnrolled(enrolled);
+                    await refreshEnrollmentStatus();
                 } else {
                     setIsEnrolled(false);
                 }
@@ -46,7 +64,7 @@ function CourseDetails() {
 
         fetchCourse();
 
-    }, [id]);
+    }, [id, refreshEnrollmentStatus]);
 
     const handleEnroll = async () => {
 
@@ -60,15 +78,22 @@ function CourseDetails() {
 
         }
 
+        if (user.role !== "ROLE_STUDENT") {
+            alert("Only student accounts can enroll in courses.");
+            return;
+        }
+
         try {
 
-            await enrollStudent(user.id, course.id);
+            await enroll(course.id);
 
-            setIsEnrolled(true);
+            await refreshEnrollmentStatus();
 
             alert("Enrollment Successful!");
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.log(error);
 
@@ -76,6 +101,10 @@ function CourseDetails() {
                 error.response?.data?.message ||
                 "Something went wrong."
             );
+
+            if ((error.response?.data?.message || "").toLowerCase().includes("already enrolled")) {
+                setIsEnrolled(true);
+            }
 
         }
 
@@ -145,19 +174,21 @@ function CourseDetails() {
                             </div>
 
                             <div className="course-quiz-panel">
-                                <h5 className="fw-bold mb-2">Assessment Quiz</h5>
+                                <h5 className="fw-bold mb-2">Assessment & Practice</h5>
                                 <p className="text-muted mb-0">
-                                    Quiz access is available only to enrolled students.
+                                    Quiz and practice exercises are available inside the learning page after enrollment.
                                 </p>
                             </div>
 
                             {checkingEnrollment ? (
-                                <div className="alert alert-light mt-4 mb-0">Checking quiz access...</div>
+                                <div className="alert alert-light mt-4 mb-0">Checking enrollment status...</div>
                             ) : isEnrolled ? (
-                                <Quiz courseId={course.id} courseTitle={course.title} />
+                                <div className="alert alert-success mt-4 mb-0">
+                                    You are enrolled. Open this course from My Courses to access lessons, quiz, and practice exercises.
+                                </div>
                             ) : (
                                 <div className="alert alert-warning mt-4 mb-0">
-                                    Enroll in this course as a student to unlock the quiz.
+                                    Enroll in this course as a student to unlock lessons, quiz, and practice exercises in My Courses.
                                 </div>
                             )}
 
@@ -196,9 +227,10 @@ function CourseDetails() {
                             <button
                                 className="btn btn-primary w-100"
                                 onClick={handleEnroll}
+                                disabled={isEnrolled}
                             >
 
-                                Enroll Now
+                                {isEnrolled ? "Enrolled" : "Enroll Now"}
 
                             </button>
 

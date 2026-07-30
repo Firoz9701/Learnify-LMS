@@ -6,9 +6,12 @@ function StudentDashboard() {
     const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
     const [stats, setStats] = useState({
         totalCourses: 0,
-        completedLessons: 0
+        completedLessons: 0,
+        completedCourses: 0
     });
     const [continueCourse, setContinueCourse] = useState(null);
+    const [activeCourses, setActiveCourses] = useState([]);
+    const [completedCoursesList, setCompletedCoursesList] = useState([]);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileForm, setProfileForm] = useState({
         firstName: "",
@@ -33,18 +36,30 @@ function StudentDashboard() {
             }
 
             try {
-                const response = await api.get(`/enrollments/student/${user.id}`);
+                const response = await api.get("/enrollments/my-courses");
+
+                const allCourses = response.data || [];
+                const completedCourses = allCourses.filter(
+                    (course) => Number(course.progress || 0) >= 100
+                );
+                const inProgressCourses = allCourses.filter(
+                    (course) => Number(course.progress || 0) < 100
+                );
+
+                setActiveCourses(inProgressCourses);
+                setCompletedCoursesList(completedCourses);
 
                 setStats({
-                    totalCourses: response.data.length,
-                    completedLessons: response.data.reduce(
+                    totalCourses: inProgressCourses.length,
+                    completedLessons: allCourses.reduce(
                         (sum, course) => sum + (course.completedLessons || 0),
                         0
-                    )
+                    ),
+                    completedCourses: completedCourses.length
                 });
 
-                if (response.data.length > 0) {
-                    setContinueCourse(response.data[0]);
+                if (inProgressCourses.length > 0) {
+                    setContinueCourse(inProgressCourses[0]);
                 } else {
                     setContinueCourse(null);
                 }
@@ -96,27 +111,48 @@ function StudentDashboard() {
             </div>
 
             <div className="row g-4 mb-5">
-                <div className="col-md-6">
-                    <div className="card stats-panel">
-                        <div className="card-body text-center">
-                            <h5>My Courses</h5>
-                            <h1 className="fw-bold">{stats.totalCourses}</h1>
+                <div className="col-md-4">
+                    <Link to="/student/my-courses" className="text-decoration-none d-block">
+                        <div className="card stats-panel dashboard-stat-card interactive-surface stagger-item" style={{ "--stagger": 1 }}>
+                            <div className="card-body text-center">
+                                <h5>Active Courses</h5>
+                                <h1 className="fw-bold">{stats.totalCourses}</h1>
+                                <small className="text-muted">Click to manage active learning</small>
+                                <div className="dashboard-card-arrow">→</div>
+                            </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
-                <div className="col-md-6">
-                    <div className="card stats-panel">
-                        <div className="card-body text-center">
-                            <h5>Lessons Completed</h5>
-                            <h1 className="fw-bold">{stats.completedLessons}</h1>
+                <div className="col-md-4">
+                    <a href="#active-learning" className="text-decoration-none d-block">
+                        <div className="card stats-panel dashboard-stat-card interactive-surface stagger-item" style={{ "--stagger": 2 }}>
+                            <div className="card-body text-center">
+                                <h5>Lessons Completed</h5>
+                                <h1 className="fw-bold">{stats.completedLessons}</h1>
+                                <small className="text-muted">Click to continue your current track</small>
+                                <div className="dashboard-card-arrow">→</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
+                </div>
+
+                <div className="col-md-4">
+                    <a href="#completed-courses" className="text-decoration-none d-block">
+                        <div className="card stats-panel completed-stat-card interactive-surface stagger-item" style={{ "--stagger": 3 }}>
+                            <div className="card-body text-center">
+                                <h5>Completed Courses</h5>
+                                <h1 className="fw-bold">{stats.completedCourses}</h1>
+                                <small className="text-muted">Click to view completed courses</small>
+                                <div className="dashboard-card-arrow">→</div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
 
             {continueCourse && (
-                <div className="card shadow-sm border-0 mb-5">
+                <div className="card shadow-sm border-0 mb-5 dashboard-spotlight-card stagger-item" id="active-learning" style={{ "--stagger": 4 }}>
                     <img
                         src={`/images/${continueCourse.courseThumbnail}`}
                         className="course-banner"
@@ -124,7 +160,8 @@ function StudentDashboard() {
                     />
 
                     <div className="card-body">
-                        <h4>{continueCourse.courseTitle}</h4>
+                        <h4 className="fw-bold mb-1">📘 {continueCourse.courseTitle}</h4>
+                        <p className="text-muted mb-2">Active Learning Spotlight</p>
 
                         <div className="progress my-3">
                             <div
@@ -145,11 +182,59 @@ function StudentDashboard() {
                 </div>
             )}
 
-            <div className="card shadow-sm border-0 mb-5">
+            {!continueCourse && (
+                <div className="card shadow-sm border-0 mb-5 dashboard-spotlight-card stagger-item" id="active-learning" style={{ "--stagger": 4 }}>
+                    <div className="card-body p-4">
+                        <h4 className="fw-bold mb-2">📘 No Active Course Right Now</h4>
+                        <p className="text-muted mb-3">All enrolled courses are completed or not started yet. Pick a course to continue learning.</p>
+                        <Link to="/courses" className="btn btn-primary">Browse Courses</Link>
+                    </div>
+                </div>
+            )}
+
+            <div className="card shadow-sm border-0 mb-5" id="completed-courses">
+                <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                            <h4 className="fw-bold mb-1">✅ Completed Courses</h4>
+                            <p className="text-muted mb-0">Finished courses are moved here from active learning.</p>
+                        </div>
+                        <span className="badge text-bg-success">{completedCoursesList.length} Completed</span>
+                    </div>
+
+                    {completedCoursesList.length === 0 ? (
+                        <div className="border rounded-4 p-3 bg-light-subtle">
+                            <p className="text-muted mb-0">No completed courses yet. Finish lessons to move courses here.</p>
+                        </div>
+                    ) : (
+                        <div className="row g-3">
+                            {completedCoursesList.map((course) => (
+                                <div className="col-md-6 col-lg-4" key={course.id}>
+                                    <Link
+                                        to={`/student/course/${course.courseId}/lessons`}
+                                        className="text-decoration-none d-block"
+                                    >
+                                        <div className="card h-100 shadow-sm completed-course-card interactive-surface stagger-item" style={{ "--stagger": 5 }}>
+                                            <div className="card-body">
+                                                <h6 className="fw-bold mb-2 text-dark">{course.courseTitle}</h6>
+                                                <p className="text-muted mb-2 small">Progress: {Math.round(course.progress || 0)}%</p>
+                                                <span className="badge text-bg-success">Completed</span>
+                                                <div className="dashboard-card-arrow">→</div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="card shadow-sm border-0 mb-5" id="profile-section">
                 <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                         <div>
-                            <h3 className="fw-bold mb-1">Profile</h3>
+                            <h3 className="fw-bold mb-1">👤 Profile</h3>
                             <p className="text-muted mb-0">
                                 Keep your learner information up to date.
                             </p>
@@ -253,15 +338,21 @@ function StudentDashboard() {
                 </div>
             </div>
 
-            <h3 className="card quick-action-card h-100 shadow-sm">Quick Actions</h3>
+            <div className="card shadow-sm border-0 mb-3 dashboard-tools-card">
+                <div className="card-body py-3 px-4">
+                    <h4 className="fw-bold mb-1">⚡ Quick Actions</h4>
+                    <p className="text-muted mb-0">Every card below is clickable for fast navigation.</p>
+                </div>
+            </div>
 
             <div className="row g-4">
                 <div className="col-md-4">
                     <Link to="/courses" className="text-decoration-none">
-                        <div className="card h-100 shadow-sm">
+                        <div className="card h-100 shadow-sm quick-action-card interactive-surface stagger-item" style={{ "--stagger": 6 }}>
                             <div className="card-body text-center">
                                 <h4>📚</h4>
                                 <h5>Browse Courses</h5>
+                                <div className="dashboard-card-arrow">→</div>
                             </div>
                         </div>
                     </Link>
@@ -269,23 +360,27 @@ function StudentDashboard() {
 
                 <div className="col-md-4">
                     <Link to="/student/my-courses" className="text-decoration-none">
-                        <div className="card h-100 shadow-sm">
+                        <div className="card h-100 shadow-sm quick-action-card interactive-surface stagger-item" style={{ "--stagger": 7 }}>
                             <div className="card-body text-center">
                                 <h4>🎓</h4>
                                 <h5>My Courses</h5>
+                                <div className="dashboard-card-arrow">→</div>
                             </div>
                         </div>
                     </Link>
                 </div>
 
                 <div className="col-md-4">
-                    <div className="card h-100 shadow-sm border-primary-subtle">
-                        <div className="card-body text-center">
-                            <h4>👤</h4>
-                            <h5>Profile</h5>
-                            <small className="text-muted">View and edit your info above</small>
+                    <a href="#profile-section" className="text-decoration-none d-block">
+                        <div className="card h-100 shadow-sm border-primary-subtle quick-action-card interactive-surface stagger-item" style={{ "--stagger": 8 }}>
+                            <div className="card-body text-center">
+                                <h4>👤</h4>
+                                <h5>Profile</h5>
+                                <small className="text-muted">View and edit your info above</small>
+                                <div className="dashboard-card-arrow">→</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>

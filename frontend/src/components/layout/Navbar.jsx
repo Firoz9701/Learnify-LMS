@@ -27,7 +27,7 @@ function Navbar() {
                         height="42"
                         className="me-2"
                     />
-                    <span className="fw-bold fs-4 text-dark">Learnify</span>
+                    <span className="fw-bold fs-4 nav-brand-text">Learnify</span>
                 </Link>
 
                 <button
@@ -35,6 +35,7 @@ function Navbar() {
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#navbarNav"
+                    aria-label="Toggle navigation"
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
@@ -52,7 +53,7 @@ function Navbar() {
                                 <Link className="nav-link nav-link-modern" to="/login">
                                     Login
                                 </Link>
-                                <Link className="btn btn-primary rounded-pill px-3 ms-2 nav-btn" to="/register">
+                                <Link className="btn btn-light rounded-pill px-3 ms-2 nav-btn nav-register-btn" to="/register">
                                     Register
                                 </Link>
                             </>
@@ -97,7 +98,7 @@ function Navbar() {
                                     Welcome, <strong>{user.firstName}</strong>
                                 </span>
 
-                                <button className="btn btn-outline-danger rounded-pill" onClick={handleLogout}>
+                                <button className="btn btn-outline-light rounded-pill nav-logout-btn" onClick={handleLogout}>
                                     Logout
                                 </button>
                             </>

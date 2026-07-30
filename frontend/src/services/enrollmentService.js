@@ -1,27 +1,32 @@
 import api from "./api";
 
-export const enrollStudent = async (studentId, courseId) => {
+/*
+ * Enroll the currently logged-in student.
+ * Student is identified from the JWT.
+ */
+export const enroll = async (courseId) => {
 
     const response = await api.post(
 
-        `/enrollments/student/${studentId}`,
-
-        {
-            courseId
-        }
+        `/enrollments/course/${courseId}`
 
     );
 
     return response.data;
+
 };
 
-export const getStudentEnrollments = async (studentId) => {
+/*
+ * Get courses of the currently logged-in student.
+ */
+export const getMyEnrollments = async () => {
 
     const response = await api.get(
 
-        `/enrollments/student/${studentId}`
+        `/enrollments/my-courses`
 
     );
 
     return response.data;
+
 };

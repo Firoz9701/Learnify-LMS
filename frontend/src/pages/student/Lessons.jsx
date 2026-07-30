@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../../services/api";
+import { getCourseById } from "../../services/courseService";
+import Quiz from "../../components/course/Quiz";
 
 function Lessons() {
 
@@ -9,6 +11,53 @@ function Lessons() {
     const [lessons, setLessons] = useState([]);
     const [completedLessons, setCompletedLessons] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [courseTitle, setCourseTitle] = useState("");
+    const [exerciseChecksByCourse, setExerciseChecksByCourse] = useState(() => {
+        try {
+            const saved = localStorage.getItem("practiceExerciseMap");
+            return saved ? JSON.parse(saved) : {};
+        } catch (error) {
+            console.log("Failed to parse practice exercise storage", error);
+            return {};
+        }
+    });
+
+    const exerciseChecks = exerciseChecksByCourse[courseId] || {};
+
+    const getPracticeExercises = (title) => {
+
+        const key = (title || "").toLowerCase();
+
+        if (key.includes("react")) {
+            return [
+                "Build a reusable card component with props for title and description.",
+                "Create a small form with validation for required fields.",
+                "Use useEffect to fetch and display a list from a public API."
+            ];
+        }
+
+        if (key.includes("java") || key.includes("spring")) {
+            return [
+                "Design a REST endpoint with request validation and proper status codes.",
+                "Create a service method and unit-test at least one success scenario.",
+                "Map DTOs to entities and persist a sample record using repository methods."
+            ];
+        }
+
+        if (key.includes("python")) {
+            return [
+                "Write a function with input validation and docstring.",
+                "Parse a small JSON payload and transform it to a new structure.",
+                "Create a script that reads data and prints a summary report."
+            ];
+        }
+
+        return [
+            "Summarize one key concept from this course in your own words.",
+            "Build one mini-task that applies the chapter you just studied.",
+            "Review your result and note one improvement for the next attempt."
+        ];
+    };
 
     useEffect(() => {
 
@@ -20,13 +69,14 @@ function Lessons() {
 
         try {
 
-            const response =
-                await api.get(`/lessons/course/${courseId}`);
+            const [lessonsResponse, progressResponse, courseResponse] = await Promise.all([
+                api.get(`/lessons/course/${courseId}`),
+                api.get("/progress"),
+                getCourseById(courseId)
+            ]);
 
-            setLessons(response.data);
-
-            const progressResponse =
-                await api.get("/progress");
+            setLessons(lessonsResponse.data);
+            setCourseTitle(courseResponse?.title || "");
 
             setCompletedLessons(
                 progressResponse.data.map(progress => progress.lessonId)
@@ -42,6 +92,21 @@ function Lessons() {
 
         }
 
+    };
+
+    const handleExerciseToggle = (index) => {
+        const updatedForCourse = {
+            ...exerciseChecks,
+            [index]: !exerciseChecks[index]
+        };
+
+        const updatedMap = {
+            ...exerciseChecksByCourse,
+            [courseId]: updatedForCourse
+        };
+
+        setExerciseChecksByCourse(updatedMap);
+        localStorage.setItem("practiceExerciseMap", JSON.stringify(updatedMap));
     };
 
     if (loading) {
@@ -67,6 +132,10 @@ function Lessons() {
                 <p className="text-muted">
                     Complete lessons in order.
                 </p>
+
+                {courseTitle && (
+                    <p className="text-muted mb-0 small">Course: {courseTitle}</p>
+                )}
 
             </div>
 
@@ -129,6 +198,32 @@ function Lessons() {
                 })}
 
             </div>
+
+            <div className="course-practice-panel mt-4">
+                <h5 className="fw-bold mb-2">Practice Exercises</h5>
+                <p className="text-muted mb-3">
+                    Complete these exercises while learning lessons for better retention.
+                </p>
+
+                <div className="d-grid gap-2">
+                    {getPracticeExercises(courseTitle).map((exercise, index) => (
+                        <label key={exercise} className="course-practice-item">
+                            <input
+                                type="checkbox"
+                                className="form-check-input me-2"
+                                checked={!!exerciseChecks[index]}
+                                onChange={() => handleExerciseToggle(index)}
+                            />
+                            <span>{exercise}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            <Quiz
+                courseId={Number(courseId)}
+                courseTitle={courseTitle || "Course Quiz"}
+            />
 
         </div>
 
