@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 import {
-    getAllCourses
+    getAllCoursesAllPages
 } from "../../services/courseService";
 
 import {
@@ -48,7 +48,9 @@ function ManageLessons() {
 
         try {
 
-            const data = await getAllCourses();
+            const data = await getAllCoursesAllPages("latest", {
+                published: "all"
+            });
 
             setCourses(data);
 

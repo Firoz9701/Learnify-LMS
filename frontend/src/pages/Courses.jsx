@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAllCourses, getCourseImage } from "../services/courseService";
+import { getAllCoursesAllPages, getCourseImage } from "../services/courseService";
 import { Link } from "react-router-dom";
 
 function Courses() {
@@ -16,7 +16,7 @@ function Courses() {
         setLoading(true);
 
         try {
-            const data = await getAllCourses(0, 12, nextFilters.sortBy, {
+            const data = await getAllCoursesAllPages(nextFilters.sortBy, {
                 search: nextFilters.searchTerm,
                 category: nextFilters.category,
                 published: nextFilters.published,

@@ -23,6 +23,42 @@ export const getAllCourses = async (
     return response.data.content;
 };
 
+export const getAllCoursesAllPages = async (
+    sortBy = "latest",
+    filters = {}
+) => {
+    const size = 50;
+    let page = 0;
+    let totalPages = 1;
+    const allCourses = [];
+
+    while (page < totalPages) {
+        const params = {
+            page,
+            size,
+            sortBy,
+            ...(filters.search ? { search: filters.search } : {}),
+            ...(filters.category ? { category: filters.category } : {}),
+            ...(filters.published ? { published: filters.published } : {}),
+            ...(filters.price ? { price: filters.price } : {})
+        };
+
+        const response = await api.get("/courses", { params });
+        const payload = response.data || {};
+
+        allCourses.push(...(payload.content || []));
+        totalPages = Number(payload.totalPages || 0);
+
+        if (totalPages <= 1) {
+            break;
+        }
+
+        page += 1;
+    }
+
+    return allCourses;
+};
+
 export const getCourseImage = (course) => {
     const title = (course?.title || "").toLowerCase();
 

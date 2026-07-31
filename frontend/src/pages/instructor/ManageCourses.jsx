@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import {
-    getAllCourses,
+    getAllCoursesAllPages,
     createCourse,
     updateCourse,
     deleteCourse
@@ -27,7 +27,9 @@ function ManageCourses() {
 
         try {
 
-            const data = await getAllCourses();
+            const data = await getAllCoursesAllPages("latest", {
+                published: "all"
+            });
 
             setCourses(data);
 
