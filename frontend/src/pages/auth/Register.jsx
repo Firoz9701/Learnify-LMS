@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register } from "../../services/authService";
+import PasswordField from "../../components/common/PasswordField";
+import {
+    isValidEmail,
+    isStrongPassword,
+    NAME_REGEX,
+    normalizeEmail
+} from "../../utils/authValidation";
 
 function Register() {
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
-        phoneNumber: "",
         password: "",
         confirmPassword: ""
     });
@@ -20,44 +26,23 @@ function Register() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
 
-    const nameRegex = /^[A-Za-z][A-Za-z\s'\-]{1,99}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\d{10,15}$/;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,50}$/;
-    const commonWeakPasswords = new Set([
-        "password",
-        "password123",
-        "12345678",
-        "qwerty123",
-        "admin123",
-        "letmein123"
-    ]);
-
     const validateForm = (payload) => {
         const nextErrors = {};
 
-        if (!payload.firstName || !nameRegex.test(payload.firstName)) {
+        if (!payload.firstName || !NAME_REGEX.test(payload.firstName)) {
             nextErrors.firstName = "First name must be at least 2 characters and contain only letters, spaces, apostrophe, or hyphen.";
         }
 
-        if (!payload.lastName || !nameRegex.test(payload.lastName)) {
+        if (!payload.lastName || !NAME_REGEX.test(payload.lastName)) {
             nextErrors.lastName = "Last name must be at least 2 characters and contain only letters, spaces, apostrophe, or hyphen.";
         }
 
-        if (!emailRegex.test(payload.email)) {
+        if (!isValidEmail(payload.email)) {
             nextErrors.email = "Please enter a valid email address.";
         }
 
-        if (payload.phoneNumber && !phoneRegex.test(payload.phoneNumber)) {
-            nextErrors.phoneNumber = "Phone number must be 10 to 15 digits.";
-        }
-
-        if (!passwordRegex.test(payload.password)) {
+        if (!isStrongPassword(payload.password)) {
             nextErrors.password = "Password must include uppercase, lowercase, number, special character, and be 8-50 characters long.";
-        }
-
-        if (commonWeakPasswords.has(payload.password.toLowerCase())) {
-            nextErrors.password = "Choose a stronger password. This one is too common.";
         }
 
         if (payload.password !== payload.confirmPassword) {
@@ -87,8 +72,7 @@ function Register() {
         const normalizedPayload = {
             firstName: formData.firstName.trim(),
             lastName: formData.lastName.trim(),
-            email: formData.email.trim().toLowerCase(),
-            phoneNumber: formData.phoneNumber.trim(),
+            email: normalizeEmail(formData.email),
             password: formData.password,
             confirmPassword: formData.confirmPassword
         };
@@ -108,7 +92,6 @@ function Register() {
                 firstName: normalizedPayload.firstName,
                 lastName: normalizedPayload.lastName,
                 email: normalizedPayload.email,
-                phoneNumber: normalizedPayload.phoneNumber || null,
                 password: normalizedPayload.password
             });
 
@@ -120,7 +103,7 @@ function Register() {
             if (responseData && typeof responseData === "object" && !Array.isArray(responseData)) {
                 const knownFieldErrors = {};
 
-                ["firstName", "lastName", "email", "phoneNumber", "password"].forEach((field) => {
+                ["firstName", "lastName", "email", "password"].forEach((field) => {
                     if (responseData[field]) {
                         knownFieldErrors[field] = String(responseData[field]);
                     }
@@ -172,34 +155,30 @@ function Register() {
                                 </div>
 
                                 <div className="mt-3">
-                                    <label className="form-label">Phone number</label>
-                                    <input type="tel" className={`form-control ${fieldErrors.phoneNumber ? "is-invalid" : ""}`} name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="10 to 15 digits" maxLength={15} />
-                                    {fieldErrors.phoneNumber && <div className="invalid-feedback">{fieldErrors.phoneNumber}</div>}
+                                    <PasswordField
+                                        label="Password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        show={showPassword}
+                                        onToggle={() => setShowPassword(!showPassword)}
+                                        error={fieldErrors.password}
+                                        helpText="Use 8-50 chars with uppercase, lowercase, number, and special character."
+                                        autoComplete="new-password"
+                                    />
                                 </div>
 
                                 <div className="mt-3">
-                                    <label className="form-label">Password <span className="text-danger">*</span></label>
-                                    <div className="input-group">
-                                        <input type={showPassword ? "text" : "password"} className={`form-control ${fieldErrors.password ? "is-invalid" : ""}`} name="password" value={formData.password} onChange={handleChange} required />
-                                        <button type="button" className="btn btn-outline-secondary" onClick={() => setShowPassword(!showPassword)}>
-                                            {showPassword ? "Hide" : "Show"}
-                                        </button>
-                                    </div>
-                                    {fieldErrors.password && <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
-                                    <small className="text-muted d-block mt-2">
-                                        Use 8-50 chars with uppercase, lowercase, number, and special character.
-                                    </small>
-                                </div>
-
-                                <div className="mt-3">
-                                    <label className="form-label">Confirm password <span className="text-danger">*</span></label>
-                                    <div className="input-group">
-                                        <input type={showConfirmPassword ? "text" : "password"} className={`form-control ${fieldErrors.confirmPassword ? "is-invalid" : ""}`} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
-                                        <button type="button" className="btn btn-outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                            {showConfirmPassword ? "Hide" : "Show"}
-                                        </button>
-                                    </div>
-                                    {fieldErrors.confirmPassword && <div className="invalid-feedback d-block">{fieldErrors.confirmPassword}</div>}
+                                    <PasswordField
+                                        label="Confirm password"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        show={showConfirmPassword}
+                                        onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        error={fieldErrors.confirmPassword}
+                                        autoComplete="new-password"
+                                    />
                                 </div>
 
                                 <div className="form-check mt-3">

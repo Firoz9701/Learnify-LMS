@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import PasswordField from "../../components/common/PasswordField";
+import {
+    isValidEmail,
+    isStrongPassword,
+    normalizeEmail,
+    normalizePhone
+} from "../../utils/authValidation";
 
 function AdminDashboard() {
     const [users, setUsers] = useState([]);
@@ -20,6 +27,8 @@ function AdminDashboard() {
     const [actionMessage, setActionMessage] = useState("");
     const [resetRequests, setResetRequests] = useState([]);
     const [resetPasswords, setResetPasswords] = useState({});
+    const [showAdminPassword, setShowAdminPassword] = useState(false);
+    const [showResetPasswords, setShowResetPasswords] = useState({});
 
     const loadUsers = async () => {
         setLoading(true);
@@ -69,13 +78,13 @@ function AdminDashboard() {
             return;
         }
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!isValidEmail(formData.email)) {
             setFormError("Please enter a valid email address.");
             return;
         }
 
-        if (formData.password.length < 8) {
-            setFormError("Password must be at least 8 characters long.");
+        if (!isStrongPassword(formData.password)) {
+            setFormError("Password must include uppercase, lowercase, number, special character, and be 8-50 characters long.");
             return;
         }
 
@@ -85,8 +94,8 @@ function AdminDashboard() {
             await api.post("/admin/users", {
                 firstName: formData.firstName.trim(),
                 lastName: formData.lastName.trim(),
-                email: formData.email.trim(),
-                phoneNumber: formData.phoneNumber.trim(),
+                email: normalizeEmail(formData.email),
+                phoneNumber: normalizePhone(formData.phoneNumber),
                 password: formData.password,
                 role: formData.role
             });
@@ -138,11 +147,18 @@ function AdminDashboard() {
         });
     };
 
+    const toggleResetPasswordVisibility = (requestId) => {
+        setShowResetPasswords((prev) => ({
+            ...prev,
+            [requestId]: !prev[requestId]
+        }));
+    };
+
     const handleResolveResetRequest = async (requestId) => {
         const temporaryPassword = resetPasswords[requestId] || "";
 
-        if (temporaryPassword.length < 8) {
-            setError("Temporary password must be at least 8 characters long.");
+        if (!isStrongPassword(temporaryPassword)) {
+            setError("Temporary password must include uppercase, lowercase, number, special character, and be 8-50 characters long.");
             return;
         }
 
@@ -195,8 +211,17 @@ function AdminDashboard() {
                             </div>
 
                             <div className="col-md-6">
-                                <label className="form-label fw-semibold">Password</label>
-                                <input type="password" className="form-control" name="password" value={formData.password} onChange={handleChange} required />
+                                <PasswordField
+                                    label="Password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    show={showAdminPassword}
+                                    onToggle={() => setShowAdminPassword(!showAdminPassword)}
+                                    required
+                                    className="form-control"
+                                    autoComplete="new-password"
+                                />
                             </div>
 
                             <div className="col-md-6">
@@ -255,12 +280,16 @@ function AdminDashboard() {
                                             </td>
                                             <td>{request.createdAt ? new Date(request.createdAt).toLocaleString() : "-"}</td>
                                             <td>
-                                                <input
-                                                    type="text"
-                                                    className="form-control form-control-sm"
-                                                    placeholder="Min 8 characters"
+                                                <PasswordField
+                                                    name={`temporaryPassword-${request.id}`}
                                                     value={resetPasswords[request.id] || ""}
                                                     onChange={(e) => handleResetPasswordInput(request.id, e.target.value)}
+                                                    show={!!showResetPasswords[request.id]}
+                                                    onToggle={() => toggleResetPasswordVisibility(request.id)}
+                                                    required
+                                                    className="form-control form-control-sm"
+                                                    placeholder="Min 8 characters"
+                                                    autoComplete="new-password"
                                                 />
                                             </td>
                                             <td>

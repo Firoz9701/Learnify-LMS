@@ -550,6 +550,29 @@ section {
   border: 1px solid rgba(79, 70, 229, 0.1);
 }
 
+.dashboard-course-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  background: #ffffff;
+  object-fit: contain;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.dashboard-course-icon-fallback {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  background: #eef2ff;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
 .dashboard-tools-card {
   background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
   border: 1px solid rgba(59, 130, 246, 0.16);

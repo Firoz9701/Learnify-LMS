@@ -3,7 +3,6 @@ import AuthContext from "../../context/AuthContext";
 import { submitAttempt } from "../../services/quizService";
 
 function Quiz({ courseId, courseTitle }) {
-    const storageKey = `quizResult_${courseId}`;
     const passThreshold = 60;
 
     const sampleBank = {
@@ -120,6 +119,8 @@ function Quiz({ courseId, courseTitle }) {
     const [review, setReview] = useState(null);
 
     const { user } = useContext(AuthContext);
+    const userStorageKey = user?.id || user?.email || "guest";
+    const storageKey = `quizResult_${courseId}_${userStorageKey}`;
 
     useEffect(() => {
         const key = (courseTitle || "").toLowerCase();
@@ -149,7 +150,13 @@ function Quiz({ courseId, courseTitle }) {
                 console.log("Failed to load saved quiz result", e);
             }
         }
-    }, [courseId, courseTitle]);
+        if (!saved) {
+            setScore(null);
+            setSubmitted(false);
+            setReview(null);
+            setAnswers({});
+        }
+    }, [courseId, courseTitle, storageKey]);
 
     const handleSelect = (questionId, answerIndex) => {
         setAnswers((prev) => ({ ...prev, [questionId]: answerIndex }));
@@ -172,8 +179,6 @@ function Quiz({ courseId, courseTitle }) {
                 question: question.question,
                 selectedIndex,
                 selectedText: selectedIndex !== undefined ? question.options[selectedIndex] : "Not answered",
-                correctIndex: question.answer,
-                correctText: question.options[question.answer],
                 isCorrect
             };
         });
@@ -191,6 +196,10 @@ function Quiz({ courseId, courseTitle }) {
             timestamp: Date.now(),
             review: reviewRows
         }));
+
+        if (passed) {
+            alert(`You passed the quiz with ${percent}% accuracy! You can download your certificate from the My Courses page.`);
+        }
 
         if (user && user.email) {
             submitAttempt(courseId, percent).catch((err) => console.log("Failed to submit attempt", err));
@@ -226,7 +235,7 @@ function Quiz({ courseId, courseTitle }) {
                                     ? `Passed. You met the ${passThreshold}% completion threshold.`
                                     : `Not passed yet. You need at least ${passThreshold}% to pass this quiz.`}
                             </div>
-                            <div className="mt-2">This result is saved locally.</div>
+                            <div className="mt-2">This result is saved for your account on this browser.</div>
                         </div>
 
                         {review && review.length > 0 && (
@@ -239,7 +248,6 @@ function Quiz({ courseId, courseTitle }) {
                                     >
                                         <div className="fw-semibold mb-2">{index + 1}. {item.question}</div>
                                         <div>Your answer: <strong>{item.selectedText}</strong></div>
-                                        <div>Correct answer: <strong>{item.correctText}</strong></div>
                                         <div className="mt-1 fw-semibold">{item.isCorrect ? "Correct" : "Incorrect"}</div>
                                     </div>
                                 ))}

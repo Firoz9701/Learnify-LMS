@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
+import { getCourseImage } from "../../services/courseService";
 import {
     getCurrentUserProfile,
     updateCurrentUserProfile
@@ -27,6 +28,7 @@ function StudentDashboard() {
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileError, setProfileError] = useState("");
     const [profileSuccess, setProfileSuccess] = useState("");
+    const [spotlightImageError, setSpotlightImageError] = useState(false);
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -100,6 +102,10 @@ function StudentDashboard() {
         loadDashboard();
     }, [user?.id]);
 
+    useEffect(() => {
+        setSpotlightImageError(false);
+    }, [continueCourse?.courseId]);
+
     const handleProfileChange = (e) => {
         setProfileForm({
             ...profileForm,
@@ -149,7 +155,7 @@ function StudentDashboard() {
         <div className="container py-5">
             <div className="hero-card mb-5">
                 <h2 className="fw-bold mb-2">
-                    👋 Welcome back, {user?.firstName}
+                    👋 Welcome, {user?.firstName}
                 </h2>
 
                 <p className="text-muted">
@@ -204,15 +210,29 @@ function StudentDashboard() {
 
             {continueCourse && (
                 <div className="card shadow-sm border-0 mb-5 dashboard-spotlight-card stagger-item" id="active-learning" style={{ "--stagger": 4 }}>
-                    <img
-                        src={`/images/${continueCourse.courseThumbnail}`}
-                        className="course-banner"
-                        alt={continueCourse.courseTitle}
-                    />
-
                     <div className="card-body">
-                        <h4 className="fw-bold mb-1">📘 {continueCourse.courseTitle}</h4>
-                        <p className="text-muted mb-2">Active Learning Spotlight</p>
+                        <div className="d-flex align-items-center gap-3 mb-2">
+                            {!spotlightImageError ? (
+                                <img
+                                    src={getCourseImage({
+                                        title: continueCourse.courseTitle,
+                                        thumbnail: continueCourse.courseThumbnail
+                                    })}
+                                    className="dashboard-course-icon"
+                                    alt={continueCourse.courseTitle}
+                                    onError={() => setSpotlightImageError(true)}
+                                />
+                            ) : (
+                                <div className="dashboard-course-icon-fallback" aria-hidden="true">📘</div>
+                            )}
+
+                            <div>
+                                <h4 className="fw-bold mb-1">📘 {continueCourse.courseTitle}</h4>
+                                <p className="text-muted mb-0">Active Learning Spotlight</p>
+                            </div>
+                        </div>
+
+                        <p className="text-muted mb-2">Continue where you left off.</p>
 
                         <div className="progress my-3">
                             <div

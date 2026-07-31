@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "../../context/AuthContext";
 import { login } from "../../services/authService";
+import PasswordField from "../../components/common/PasswordField";
+import { isValidEmail } from "../../utils/authValidation";
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -33,7 +35,7 @@ function Login() {
             return;
         }
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!isValidEmail(formData.email)) {
             setError("Please enter a valid email address.");
             return;
         }
@@ -109,33 +111,23 @@ function Login() {
                                     />
                                 </div>
 
-                                <div className="mb-3">
-                                    <label className="form-label fw-semibold">
-                                        Password <span className="text-danger">*</span>
-                                    </label>
-                                    <div className="input-group">
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            name="password"
-                                            className="form-control form-control-lg"
-                                            placeholder="Enter your password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                        >
-                                            {showPassword ? "Hide" : "Show"}
-                                        </button>
-                                    </div>
-                                    <div className="text-end mt-2">
-                                        <Link to="/forgot-password" className="small text-decoration-none fw-semibold">
-                                            Forgot Password?
-                                        </Link>
-                                    </div>
+                                <PasswordField
+                                    label="Password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    show={showPassword}
+                                    onToggle={() => setShowPassword(!showPassword)}
+                                    placeholder="Enter your password"
+                                    required
+                                    className="form-control form-control-lg"
+                                    autoComplete="current-password"
+                                />
+
+                                <div className="text-end mt-2">
+                                    <Link to="/forgot-password" className="small text-decoration-none fw-semibold">
+                                        Forgot Password?
+                                    </Link>
                                 </div>
 
                                 <div className="mb-3">

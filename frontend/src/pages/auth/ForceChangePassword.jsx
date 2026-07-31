@@ -2,6 +2,8 @@ import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../context/AuthContext";
 import { changeTemporaryPassword } from "../../services/authService";
+import PasswordField from "../../components/common/PasswordField";
+import { isStrongPassword } from "../../utils/authValidation";
 
 function ForceChangePassword() {
     const navigate = useNavigate();
@@ -13,6 +15,8 @@ function ForceChangePassword() {
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -26,8 +30,8 @@ function ForceChangePassword() {
         setError("");
         setMessage("");
 
-        if (formData.newPassword.length < 8) {
-            setError("Password must be at least 8 characters long.");
+        if (!isStrongPassword(formData.newPassword)) {
+            setError("Password must include uppercase, lowercase, number, special character, and be 8-50 characters long.");
             return;
         }
 
@@ -77,29 +81,30 @@ function ForceChangePassword() {
                             </div>
 
                             <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                    <label className="form-label fw-semibold">New Password</label>
-                                    <input
-                                        type="password"
-                                        className="form-control form-control-lg"
-                                        name="newPassword"
-                                        value={formData.newPassword}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                                <PasswordField
+                                    label="New Password"
+                                    name="newPassword"
+                                    value={formData.newPassword}
+                                    onChange={handleChange}
+                                    show={showNewPassword}
+                                    onToggle={() => setShowNewPassword(!showNewPassword)}
+                                    required
+                                    className="form-control form-control-lg"
+                                    helpText="Use 8-50 chars with uppercase, lowercase, number, and special character."
+                                    autoComplete="new-password"
+                                />
 
-                                <div className="mb-3">
-                                    <label className="form-label fw-semibold">Confirm Password</label>
-                                    <input
-                                        type="password"
-                                        className="form-control form-control-lg"
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                                <PasswordField
+                                    label="Confirm Password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    show={showConfirmPassword}
+                                    onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    required
+                                    className="form-control form-control-lg"
+                                    autoComplete="new-password"
+                                />
 
                                 {error && <div className="alert alert-danger py-2">{error}</div>}
                                 {message && <div className="alert alert-success py-2">{message}</div>}

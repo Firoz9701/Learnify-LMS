@@ -4,6 +4,7 @@ import {
     requestPasswordReset,
     checkPasswordResetStatus
 } from "../../services/authService";
+import { isValidEmail, normalizeEmail } from "../../utils/authValidation";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
@@ -79,7 +80,7 @@ function ForgotPassword() {
         setMessage("");
         setStatusMessage("");
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (!isValidEmail(email)) {
             setError("Please enter a valid email address.");
             return;
         }
@@ -87,7 +88,7 @@ function ForgotPassword() {
         setLoading(true);
 
         try {
-            const normalizedEmail = email.trim();
+            const normalizedEmail = normalizeEmail(email);
             const response = await requestPasswordReset(normalizedEmail);
             setMessage(response.data.message);
             setSubmittedEmail(normalizedEmail);
