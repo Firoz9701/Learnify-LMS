@@ -9,14 +9,24 @@
   --primary: #4f46e5;
   --primary-dark: #3730a3;
   --surface: #f8f7ff;
+  --page-bg: #e9f2ff;
   --text: #111827;
   --muted: #6b7280;
 }
 
 body {
   font-family: Inter, Arial, Helvetica, sans-serif;
-  background: linear-gradient(180deg, #ffffff 0%, #f8f7ff 100%);
+  background:
+    radial-gradient(circle at 10% 8%, rgba(59, 130, 246, 0.14), transparent 30%),
+    radial-gradient(circle at 92% 18%, rgba(14, 165, 233, 0.12), transparent 34%),
+    var(--page-bg);
   color: var(--text);
+}
+
+#root {
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(219, 234, 254, 0.32) 100%);
 }
 
 section {
