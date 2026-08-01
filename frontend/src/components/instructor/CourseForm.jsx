@@ -7,6 +7,7 @@ function CourseForm({ onSubmit, editingCourse }) {
         description: "",
         thumbnail: "",
         price: "",
+        pricingType: "paid",
         published: false
     });
 
@@ -19,7 +20,8 @@ function CourseForm({ onSubmit, editingCourse }) {
                 title: editingCourse.title || "",
                 description: editingCourse.description || "",
                 thumbnail: editingCourse.thumbnail || "",
-                price: editingCourse.price || "",
+                price: editingCourse.price ?? "",
+                pricingType: Number(editingCourse.price || 0) > 0 ? "paid" : "free",
                 published: editingCourse.published ?? false
             });
 
@@ -31,10 +33,20 @@ function CourseForm({ onSubmit, editingCourse }) {
 
         const { name, value, type, checked } = e.target;
 
-        setCourse(prev => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value
-        }));
+        setCourse(prev => {
+            if (name === "pricingType") {
+                return {
+                    ...prev,
+                    pricingType: value,
+                    price: value === "free" ? "0" : prev.price
+                };
+            }
+
+            return {
+                ...prev,
+                [name]: type === "checkbox" ? checked : value
+            };
+        });
 
     };
 
@@ -42,13 +54,19 @@ function CourseForm({ onSubmit, editingCourse }) {
 
         e.preventDefault();
 
-        onSubmit(course);
+        const normalizedCourse = {
+            ...course,
+            price: course.pricingType === "free" ? 0 : Number(course.price || 0)
+        };
+
+        onSubmit(normalizedCourse);
 
         setCourse({
             title: "",
             description: "",
             thumbnail: "",
             price: "",
+            pricingType: "paid",
             published: false
         });
 
@@ -116,18 +134,35 @@ function CourseForm({ onSubmit, editingCourse }) {
                 </div>
 
                 <div className="col-md-4">
-                    <label className="form-label fw-semibold">Price</label>
-                    <input
-                        className="form-control"
-                        name="price"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        value={course.price}
+                    <label className="form-label fw-semibold">Course Type</label>
+                    <select
+                        className="form-select"
+                        name="pricingType"
+                        value={course.pricingType}
                         onChange={handleChange}
-                        required
-                    />
+                    >
+                        <option value="free">Free</option>
+                        <option value="paid">Paid</option>
+                    </select>
+                    <small className="text-muted">Free courses enroll directly without checkout.</small>
                 </div>
+
+                {course.pricingType === "paid" && (
+                    <div className="col-md-4">
+                        <label className="form-label fw-semibold">Price</label>
+                        <input
+                            className="form-control"
+                            name="price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            value={course.price}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="form-check mt-4 mb-4">

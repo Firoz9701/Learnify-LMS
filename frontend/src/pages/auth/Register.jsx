@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { register } from "../../services/authService";
+import { Link } from "react-router-dom";
+import { register, verifyEmail } from "../../services/authService";
 import PasswordField from "../../components/common/PasswordField";
 import {
     isValidEmail,
@@ -24,7 +24,11 @@ function Register() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const navigate = useNavigate();
+    const [verificationToken, setVerificationToken] = useState("");
+    const [verificationCode, setVerificationCode] = useState("");
+    const [verificationError, setVerificationError] = useState("");
+    const [verificationSuccess, setVerificationSuccess] = useState("");
+    const [verifyingEmail, setVerifyingEmail] = useState(false);
 
     const validateForm = (payload) => {
         const nextErrors = {};
@@ -67,6 +71,8 @@ function Register() {
         e.preventDefault();
         setError("");
         setMessage("");
+        setVerificationError("");
+        setVerificationSuccess("");
         setFieldErrors({});
 
         const normalizedPayload = {
@@ -88,15 +94,18 @@ function Register() {
         setLoading(true);
 
         try {
-            await register({
+            const response = await register({
                 firstName: normalizedPayload.firstName,
                 lastName: normalizedPayload.lastName,
                 email: normalizedPayload.email,
                 password: normalizedPayload.password
             });
 
-            setMessage("Registration successful. You can now log in.");
-            setTimeout(() => navigate("/login"), 1000);
+            const token = response?.data?.emailVerificationToken;
+            const nextToken = token || "";
+            setVerificationToken(nextToken);
+            setVerificationCode("");
+            setMessage("Registration successful. Please verify your email before signing in.");
         } catch (err) {
             const responseData = err.response?.data;
 
@@ -119,6 +128,50 @@ function Register() {
             setError(responseData?.message || "Registration failed. Please try again.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const resetRegistrationForm = () => {
+        setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
+            confirmPassword: ""
+        });
+        setAcceptTerms(false);
+        setFieldErrors({});
+        setVerificationToken("");
+        setVerificationCode("");
+        setVerificationError("");
+        setVerificationSuccess("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+    };
+
+    const handleVerificationSubmit = async () => {
+        setVerificationError("");
+        setVerificationSuccess("");
+
+        if (!verificationCode.trim()) {
+            setVerificationError("Please enter the verification code.");
+            return;
+        }
+
+        setVerifyingEmail(true);
+
+        try {
+            const response = await verifyEmail(verificationCode.trim());
+            const successMessage = response?.data?.message || "Email verified successfully. You can now sign in.";
+            setVerificationSuccess(successMessage);
+            setVerificationToken("");
+            setVerificationCode("");
+            setMessage(successMessage);
+            resetRegistrationForm();
+        } catch (err) {
+            setVerificationError(err.response?.data?.message || "Verification failed. Please check the code and try again.");
+        } finally {
+            setVerifyingEmail(false);
         }
     };
 
@@ -204,6 +257,32 @@ function Register() {
 
                                 {error && <div className="alert alert-danger mt-3 py-2">{error}</div>}
                                 {message && <div className="alert alert-success mt-3 py-2">{message}</div>}
+                                {(verificationToken || verificationSuccess || verificationError) && (
+                                    <div className="alert alert-info mt-3 py-3 mb-0">
+                                        <div className="fw-semibold">Verify your email</div>
+                                        <p className="small mb-3">Use the code shown below or paste it into the field and confirm it here immediately after signup.</p>
+                                        {verificationToken && (
+                                            <div className="mb-3">
+                                                <div className="small text-muted">Verification code</div>
+                                                <div className="fw-semibold">{verificationToken}</div>
+                                            </div>
+                                        )}
+                                        <div className="d-flex flex-column gap-2">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={verificationCode}
+                                                onChange={(e) => setVerificationCode(e.target.value)}
+                                                placeholder="Enter verification code"
+                                            />
+                                            {verificationError && <div className="alert alert-danger py-2 mb-0">{verificationError}</div>}
+                                            {verificationSuccess && <div className="alert alert-success py-2 mb-0">{verificationSuccess}</div>}
+                                            <button className="btn btn-outline-primary" type="button" onClick={handleVerificationSubmit} disabled={verifyingEmail}>
+                                                {verifyingEmail ? "Verifying..." : "Verify email"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <button className="btn btn-primary w-100 rounded-pill mt-4" type="submit" disabled={loading || !acceptTerms}>
                                     {loading ? "Creating account..." : "Create account"}

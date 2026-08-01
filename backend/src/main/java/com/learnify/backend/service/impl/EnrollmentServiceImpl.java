@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
@@ -66,10 +68,24 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                                         "Student is already enrolled in this course.");
                 }
 
+                if (Boolean.FALSE.equals(student.getEmailVerified()) && course.getPrice().compareTo(BigDecimal.ZERO) > 0) {
+                        throw new IllegalArgumentException("Please verify your email before enrolling in paid courses.");
+                }
+
                 Enrollment enrollment = new Enrollment();
 
                 enrollment.setStudent(student);
                 enrollment.setCourse(course);
+
+                if (course.getPrice().compareTo(BigDecimal.ZERO) > 0) {
+                        enrollment.setAmountPaid(course.getPrice());
+                        enrollment.setPaymentStatus("PAID");
+                        enrollment.setPaymentReference("SIM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                        enrollment.setPaidAt(java.time.LocalDateTime.now());
+                } else {
+                        enrollment.setAmountPaid(BigDecimal.ZERO);
+                        enrollment.setPaymentStatus("FREE");
+                }
 
                 Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
 
@@ -125,6 +141,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 response.setTotalLessons((int) totalLessons);
 
                 response.setCompletedLessons((int) completedLessons);
+                response.setAmountPaid(enrollment.getAmountPaid());
+                response.setPaymentStatus(enrollment.getPaymentStatus());
+                response.setPaymentReference(enrollment.getPaymentReference());
+                response.setPaymentRequired(enrollment.getCourse().getPrice().compareTo(BigDecimal.ZERO) > 0);
 
                 if (totalLessons == 0) {
 

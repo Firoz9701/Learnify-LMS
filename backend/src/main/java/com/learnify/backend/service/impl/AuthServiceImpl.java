@@ -17,6 +17,8 @@ import com.learnify.backend.service.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 import com.learnify.backend.entity.auth.Role;
 import com.learnify.backend.entity.auth.User;
 
@@ -80,7 +82,10 @@ public class AuthServiceImpl implements AuthService {
 
         user.setEnabled(true);
 
+        String verificationToken = UUID.randomUUID().toString();
+
         user.setEmailVerified(false);
+        user.setEmailVerificationToken(verificationToken);
 
         user.setForcePasswordChange(false);
 
@@ -98,6 +103,8 @@ public class AuthServiceImpl implements AuthService {
         response.setProfileImage(savedUser.getProfileImage());
         response.setRole(savedUser.getRole().getName().name());
         response.setEnabled(savedUser.getEnabled());
+        response.setEmailVerified(savedUser.getEmailVerified());
+        response.setEmailVerificationToken(savedUser.getEmailVerificationToken());
         response.setForcePasswordChange(savedUser.getForcePasswordChange());
 
         return response;
@@ -117,6 +124,10 @@ public class AuthServiceImpl implements AuthService {
             throw new ResourceNotFoundException("Invalid email or password.");
         }
 
+        if (Boolean.FALSE.equals(user.getEmailVerified())) {
+            throw new IllegalArgumentException("Please verify your email before signing in.");
+        }
+
         String token = jwtService.generateToken(user.getEmail());
 
         UserResponse userResponse = new UserResponse();
@@ -129,6 +140,7 @@ public class AuthServiceImpl implements AuthService {
         userResponse.setProfileImage(user.getProfileImage());
         userResponse.setRole(user.getRole().getName().name());
         userResponse.setEnabled(user.getEnabled());
+        userResponse.setEmailVerified(user.getEmailVerified());
         userResponse.setForcePasswordChange(user.getForcePasswordChange());
 
         LoginResponse response = new LoginResponse();
@@ -149,6 +161,27 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         return "Password changed successfully.";
+    }
+
+    @Override
+    public String verifyEmail(String token) {
+
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Verification token is required.");
+        }
+
+        String normalizedToken = token.trim();
+
+        User user = userRepository.findAll().stream()
+                .filter(existingUser -> normalizedToken.equals(existingUser.getEmailVerificationToken() == null ? null : existingUser.getEmailVerificationToken().trim()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid or expired verification token."));
+
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        userRepository.save(user);
+
+        return "Email verified successfully. You can now sign in.";
     }
 
     @Override
@@ -187,6 +220,7 @@ public class AuthServiceImpl implements AuthService {
         userResponse.setProfileImage(user.getProfileImage());
         userResponse.setRole(user.getRole().getName().name());
         userResponse.setEnabled(user.getEnabled());
+        userResponse.setEmailVerified(user.getEmailVerified());
         userResponse.setForcePasswordChange(user.getForcePasswordChange());
 
         return userResponse;

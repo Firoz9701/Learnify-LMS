@@ -26,6 +26,10 @@ export const getCurrentUserProfile = () => {
     return api.get("/auth/me");
 };
 
+export const verifyEmail = (token) => {
+    return api.get("/auth/verify-email", { params: { token } });
+};
+
 export const updateCurrentUserProfile = (profileData) => {
     return api.put("/auth/me", profileData);
 };

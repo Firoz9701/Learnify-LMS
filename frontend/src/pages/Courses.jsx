@@ -213,7 +213,9 @@ function Courses() {
                                     <p className="text-muted mt-2">{course.description}</p>
                                 </div>
                                 <div className="card-footer bg-transparent border-0 px-4 pb-4 pt-0 d-flex justify-content-between align-items-center">
-                                    <span className="fw-semibold text-dark">₹ {course.price}</span>
+                                    <span className="fw-semibold text-dark">
+                                        {Number(course.price || 0) > 0 ? `₹ ${course.price}` : "Free"}
+                                    </span>
                                     <Link to={`/courses/${course.id}`} className="btn btn-primary btn-sm rounded-pill">
                                         View Details
                                     </Link>

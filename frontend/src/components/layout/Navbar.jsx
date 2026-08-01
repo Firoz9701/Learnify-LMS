@@ -12,7 +12,7 @@ function Navbar() {
 
         logoutUser();
 
-        navigate("/login");
+        navigate("/");
 
     };
 

@@ -97,7 +97,7 @@ function FeaturedCourses() {
                                     <div className="d-flex justify-content-between align-items-center">
 
                                         <h5 className="text-primary fw-bold mb-0">
-                                            ₹ {course.price}
+                                            {Number(course.price || 0) > 0 ? `₹ ${course.price}` : "Free"}
                                         </h5>
 
                                         <Link

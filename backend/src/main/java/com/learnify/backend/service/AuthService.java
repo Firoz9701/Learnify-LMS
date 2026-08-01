@@ -15,6 +15,8 @@ public interface AuthService {
 
     String changeTemporaryPassword(String email, ChangePasswordRequest request);
 
+    String verifyEmail(String token);
+
     UserResponse getCurrentUserProfile(String email);
 
     UserResponse updateCurrentUserProfile(String email, ProfileUpdateRequest request);

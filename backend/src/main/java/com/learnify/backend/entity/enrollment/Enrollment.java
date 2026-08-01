@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,4 +31,14 @@ public class Enrollment extends BaseEntity {
 
     @Column(nullable = false)
     private Double progress = 0.0;
+
+    @Column(nullable = false)
+    private BigDecimal amountPaid = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private String paymentStatus = "FREE";
+
+    private String paymentReference;
+
+    private LocalDateTime paidAt;
 }

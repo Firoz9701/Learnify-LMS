@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
     getAllCoursesAllPages,
@@ -14,6 +14,7 @@ function ManageCourses() {
     const [courses, setCourses] = useState([]);
 
     const [editingCourse, setEditingCourse] = useState(null);
+    const formSectionRef = useRef(null);
 
     const publishedCourses = courses.filter((course) => course.published).length;
 
@@ -69,6 +70,13 @@ function ManageCourses() {
 
         }
 
+    };
+
+    const handleEdit = (course) => {
+        setEditingCourse(course);
+        setTimeout(() => {
+            formSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 80);
     };
 
     const handleDelete = async (id) => {
@@ -133,10 +141,12 @@ function ManageCourses() {
                 </div>
             </div>
 
-            <CourseForm
-                onSubmit={handleSubmit}
-                editingCourse={editingCourse}
-            />
+            <div ref={formSectionRef}>
+                <CourseForm
+                    onSubmit={handleSubmit}
+                    editingCourse={editingCourse}
+                />
+            </div>
 
             <div className="card shadow-sm border-0 instructor-panel">
 
@@ -186,7 +196,9 @@ function ManageCourses() {
 
                                         <td className="fw-semibold">{course.title}</td>
 
-                                        <td>Rs. {course.price}</td>
+                                        <td>
+                                            {Number(course.price || 0) > 0 ? `Rs. ${course.price}` : <span className="text-success fw-semibold">Free</span>}
+                                        </td>
 
                                         <td>
                                             <span className={`badge ${course.published ? "text-bg-success" : "text-bg-secondary"}`}>
@@ -199,7 +211,7 @@ function ManageCourses() {
                                             <div className="d-flex flex-wrap gap-2">
                                                 <button
                                                     className="btn btn-outline-primary btn-sm"
-                                                    onClick={() => setEditingCourse(course)}
+                                                    onClick={() => handleEdit(course)}
                                                 >
                                                     Edit
                                                 </button>

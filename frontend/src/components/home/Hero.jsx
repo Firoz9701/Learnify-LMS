@@ -116,7 +116,7 @@ function Hero() {
                                     <div className="col-6">
                                         <div className="card border-0 shadow-sm p-3 text-center">
                                             <h3 className="text-primary fw-bold">
-                                                12
+                                                12+
                                             </h3>
                                             <small>Premium Courses</small>
                                         </div>

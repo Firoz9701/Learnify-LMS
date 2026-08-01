@@ -30,19 +30,20 @@ public class UserSeeder implements CommandLineRunner {
 
     private void createAdmin() {
 
-        if (userRepository.existsByEmail("firoz@gmail.com"))
-            return;
-
         Role role = roleRepository.findByName(RoleName.ROLE_ADMIN).orElseThrow();
+        User user = userRepository.findByEmail("firoz@gmail.com").orElseGet(User::new);
 
-        User user = new User();
+        if (user.getId() == null) {
+            user.setFirstName("Firoz");
+            user.setLastName("Khan");
+            user.setEmail("firoz@gmail.com");
+            user.setPhoneNumber("9876543210");
+            user.setPassword(passwordEncoder.encode("Password123"));
+        }
 
-        user.setFirstName("Firoz");
-        user.setLastName("Khan");
-        user.setEmail("firoz@gmail.com");
-        user.setPhoneNumber("9876543210");
-        user.setPassword(passwordEncoder.encode("Password123"));
         user.setEnabled(true);
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
         user.setRole(role);
 
         userRepository.save(user);
@@ -50,19 +51,20 @@ public class UserSeeder implements CommandLineRunner {
 
     private void createInstructor() {
 
-        if (userRepository.existsByEmail("instructor@learnify.com"))
-            return;
-
         Role role = roleRepository.findByName(RoleName.ROLE_INSTRUCTOR).orElseThrow();
+        User user = userRepository.findByEmail("instructor@learnify.com").orElseGet(User::new);
 
-        User user = new User();
+        if (user.getId() == null) {
+            user.setFirstName("Learnify");
+            user.setLastName("Instructor");
+            user.setEmail("instructor@learnify.com");
+            user.setPhoneNumber("9999999999");
+            user.setPassword(passwordEncoder.encode("instructor123"));
+        }
 
-        user.setFirstName("Learnify");
-        user.setLastName("Instructor");
-        user.setEmail("instructor@learnify.com");
-        user.setPhoneNumber("9999999999");
-        user.setPassword(passwordEncoder.encode("instructor123"));
         user.setEnabled(true);
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
         user.setRole(role);
 
         userRepository.save(user);
@@ -70,19 +72,20 @@ public class UserSeeder implements CommandLineRunner {
 
     private void createStudent() {
 
-        if (userRepository.existsByEmail("student@learnify.com"))
-            return;
-
         Role role = roleRepository.findByName(RoleName.ROLE_STUDENT).orElseThrow();
+        User user = userRepository.findByEmail("student@learnify.com").orElseGet(User::new);
 
-        User user = new User();
+        if (user.getId() == null) {
+            user.setFirstName("Learnify");
+            user.setLastName("Student");
+            user.setEmail("student@learnify.com");
+            user.setPhoneNumber("8888888888");
+            user.setPassword(passwordEncoder.encode("student@123"));
+        }
 
-        user.setFirstName("Learnify");
-        user.setLastName("Student");
-        user.setEmail("student@learnify.com");
-        user.setPhoneNumber("8888888888");
-        user.setPassword(passwordEncoder.encode("Student@123"));
         user.setEnabled(true);
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
         user.setRole(role);
 
         userRepository.save(user);

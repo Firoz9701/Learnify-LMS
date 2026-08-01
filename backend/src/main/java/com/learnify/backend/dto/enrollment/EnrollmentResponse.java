@@ -3,6 +3,7 @@ package com.learnify.backend.dto.enrollment;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -27,4 +28,11 @@ public class EnrollmentResponse {
 
     private Integer completedLessons;
 
+    private BigDecimal amountPaid;
+
+    private String paymentStatus;
+
+    private String paymentReference;
+
+    private Boolean paymentRequired;
 }

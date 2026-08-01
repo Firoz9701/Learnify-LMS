@@ -12,7 +12,7 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
 
         return (
             <Navigate
-                to="/login"
+                to="/"
                 state={{ from: location }}
                 replace
             />

@@ -23,5 +23,9 @@ public class UserResponse {
 
     private Boolean enabled;
 
+    private Boolean emailVerified;
+
+    private String emailVerificationToken;
+
     private Boolean forcePasswordChange;
 }
