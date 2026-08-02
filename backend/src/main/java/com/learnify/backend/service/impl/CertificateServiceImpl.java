@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.io.File;
+import java.io.IOException;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
@@ -73,6 +75,7 @@ public class CertificateServiceImpl implements CertificateService {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
             Document document = new Document(PageSize.A4.rotate());
+            document.setMargins(28f, 28f, 24f, 24f);
 
             PdfWriter.getInstance(document, outputStream);
 
@@ -94,25 +97,19 @@ public class CertificateServiceImpl implements CertificateService {
 
             // Font headingFont = new Font(Font.HELVETICA, 20, Font.BOLD);
 
-            Font normalFont = new Font(Font.HELVETICA, 16);
+            Font normalFont = new Font(Font.HELVETICA, 15);
 
             Font nameFont = new Font(
                     Font.HELVETICA,
-                    32,
+                    28,
                     Font.BOLD,
                     new Color(34, 34, 34));
 
-            Font titleFont = new Font(Font.HELVETICA, 34, Font.BOLD, new Color(79, 70, 229));
+            Font headingFont = new Font(Font.HELVETICA, 22, Font.BOLD);
 
-            Paragraph title = new Paragraph("LEARNIFY LMS", titleFont);
-
-            title.setAlignment(Element.ALIGN_CENTER);
-
-            document.add(title);
+            addLogo(document);
 
             document.add(new Paragraph(" "));
-
-            Font headingFont = new Font(Font.HELVETICA, 24, Font.BOLD);
 
             Paragraph certificate = new Paragraph(
                     "CERTIFICATE OF COMPLETION",
@@ -122,8 +119,6 @@ public class CertificateServiceImpl implements CertificateService {
 
             document.add(certificate);
 
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph(" "));
             document.add(new Paragraph(" "));
 
             Paragraph line1 = new Paragraph("This certifies that", normalFont);
@@ -159,7 +154,6 @@ public class CertificateServiceImpl implements CertificateService {
             document.add(courseTitle);
 
             document.add(new Paragraph(" "));
-            document.add(new Paragraph(" "));
 
             Paragraph progress = new Paragraph(
                     "Course Progress : "
@@ -181,10 +175,6 @@ public class CertificateServiceImpl implements CertificateService {
             date.setAlignment(Element.ALIGN_CENTER);
 
             document.add(date);
-
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph(" "));
 
             document.add(new Paragraph(" "));
 
@@ -214,7 +204,7 @@ public class CertificateServiceImpl implements CertificateService {
                             + courseId
                             + "-"
                             + System.currentTimeMillis(),
-                    new Font(Font.HELVETICA, 12));
+                    new Font(Font.HELVETICA, 11));
 
             certificateId.setAlignment(Element.ALIGN_CENTER);
 
@@ -229,5 +219,30 @@ public class CertificateServiceImpl implements CertificateService {
             throw new RuntimeException("Unable to generate certificate.", e);
 
         }
+    }
+
+    private void addLogo(Document document) throws IOException, BadElementException {
+        String[] candidatePaths = {
+                "frontend/public/logo-full.png",
+                "../frontend/public/logo-full.png",
+                "src/main/resources/static/logo-full.png"
+        };
+
+        for (String path : candidatePaths) {
+            File logoFile = new File(path);
+            if (logoFile.exists() && logoFile.isFile()) {
+                Image logo = Image.getInstance(logoFile.getAbsolutePath());
+                logo.scaleToFit(260f, 70f);
+                logo.setAlignment(Element.ALIGN_CENTER);
+                document.add(logo);
+                return;
+            }
+        }
+
+        Paragraph fallbackTitle = new Paragraph(
+                "LEARNIFY",
+                new Font(Font.HELVETICA, 26, Font.BOLD, new Color(79, 70, 229)));
+        fallbackTitle.setAlignment(Element.ALIGN_CENTER);
+        document.add(fallbackTitle);
     }
 }
